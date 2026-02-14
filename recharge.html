@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recharge | SunPower</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .modal-active { display: flex !important; animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+        .amt-btn { transition: 0.2s; border: 2px solid #f1f5f9; cursor: pointer; }
+        .amt-btn.active { border-color: #2563eb; background-color: #eff6ff; color: #1e40af; transform: scale(0.95); }
+    </style>
+</head>
+<body class="bg-slate-50 min-h-screen pb-20">
+
+    <div id="customAlert" class="fixed inset-0 bg-black/50 z-[200] hidden items-center justify-center p-6 backdrop-blur-sm">
+        <div class="bg-white w-full max-w-xs rounded-[35px] p-8 text-center shadow-2xl">
+            <div id="alertIcon" class="w-16 h-16 bg-red-100 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <h3 id="alertTitle" class="font-black text-slate-800 uppercase italic text-sm mb-2">Notice</h3>
+            <p id="alertMsg" class="text-xs font-bold text-slate-500 leading-relaxed mb-6"></p>
+            <button onclick="closeAlert()" class="w-full bg-slate-900 text-white py-4 rounded-2xl font-black uppercase text-[10px] tracking-widest shadow-lg active:scale-95 transition-all">Dismiss</button>
+        </div>
+    </div>
+
+    <div class="bg-blue-600 p-8 text-white text-center rounded-b-[45px] shadow-xl relative">
+        <button onclick="window.location.href='index.html'" class="absolute left-6 top-8 bg-white/20 w-10 h-10 rounded-full flex items-center justify-center">
+            <i class="fas fa-arrow-left text-sm"></i>
+        </button>
+        <h1 class="text-2xl font-black uppercase italic tracking-tighter">Add Cash</h1>
+    </div>
+
+    <div class="p-6 max-w-md mx-auto -mt-10">
+        <div class="bg-white rounded-[40px] shadow-2xl p-8 border border-slate-100">
+            
+            <div class="text-center mb-6">
+                <div class="bg-slate-50 p-6 rounded-[40px] inline-block border-4 border-dashed border-blue-100 mb-4 shadow-inner">
+                    <img id="qrDisplay" src="https://via.placeholder.com/300?text=Select+Amount" class="w-56 h-56 rounded-3xl mx-auto object-contain shadow-sm">
+                </div>
+                
+                <div class="bg-blue-50 py-4 px-6 rounded-2xl flex items-center justify-between border border-blue-100 mb-2">
+                    <div class="text-left">
+                        <p class="text-[8px] font-black text-blue-400 uppercase tracking-widest">Merchant UPI ID</p>
+                        <span id="upiId" class="text-sm font-black text-blue-700 italic uppercase">loading...</span>
+                    </div>
+                    <button onclick="copyUPI()" class="bg-blue-600 text-white w-10 h-10 rounded-xl shadow-lg active:scale-90 transition-all flex items-center justify-center">
+                        <i class="fas fa-copy"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="space-y-6">
+                <div>
+                    <label class="text-[10px] font-black text-blue-600 uppercase ml-2 italic">Select Recharge Amount</label>
+                    <div class="grid grid-cols-3 gap-2 mt-2">
+                        <button onclick="selectAmount(300, this)" class="amt-btn py-3 rounded-2xl text-xs font-black bg-white text-slate-600">₹300</button>
+                        <button onclick="selectAmount(500, this)" class="amt-btn py-3 rounded-2xl text-xs font-black bg-white text-slate-600">₹500</button>
+                        <button onclick="selectAmount(1000, this)" class="amt-btn py-3 rounded-2xl text-xs font-black bg-white text-slate-600">₹1000</button>
+                        <button onclick="selectAmount(2000, this)" class="amt-btn py-3 rounded-2xl text-xs font-black bg-white text-slate-600">₹2000</button>
+                        <button onclick="selectAmount(5000, this)" class="amt-btn py-3 rounded-2xl text-xs font-black bg-white text-slate-600">₹5000</button>
+                        <button onclick="selectAmount(15000, this)" class="amt-btn py-3 rounded-2xl text-xs font-black bg-white text-slate-600">₹15000</button>
+                    </div>
+                    <input type="hidden" id="rechargeAmt" value="">
+                    <p id="selectedDisplay" class="text-center mt-3 text-2xl font-black text-blue-600 italic">₹0</p>
+                </div>
+
+                <div>
+                    <label class="text-[10px] font-black text-blue-600 uppercase ml-2 italic">12-Digit UTR (Ref. No)</label>
+                    <input type="number" id="utrNumber" oninput="if(this.value.length > 12) this.value = this.value.slice(0,12)" placeholder="Enter 12 Digit Number" 
+                           class="w-full p-4 bg-slate-50 rounded-2xl border-none outline-none font-black text-gray-700 mt-1 shadow-inner border border-gray-100 tracking-[0.2em] text-center">
+                    <p class="text-center text-[9px] text-gray-400 mt-2 font-bold uppercase tracking-tighter">* Payment proof requires exactly 12 digits</p>
+                </div>
+
+                <button id="finalSubmitBtn" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-5 rounded-2xl font-black text-lg shadow-xl active:scale-95 transition-all uppercase italic tracking-widest mt-4">
+                    SUBMIT RECHARGE <i class="fas fa-paper-plane ml-2"></i>
+                </button>
+            </div>
+        </div>
+        <div class="mt-10 px-2">
+            <h3 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-4 italic px-2">Deposit History</h3>
+            <div id="rechargeHistory" class="space-y-3">
+                <p class="text-center text-[10px] font-bold text-slate-300 py-4 italic uppercase">Fetching records...</p>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, doc, getDoc, collection, addDoc, query, where, orderBy, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyA3k5ByUuJ-1jtVovgZMxsw1LBaBkn_nDo",
+            authDomain: "new-investment-web.firebaseapp.com",
+            projectId: "new-investment-web",
+            storageBucket: "new-investment-web.firebasestorage.app",
+            messagingSenderId: "1078188475858",
+            appId: "1:1078188475858:web:b3777ea127aae8083740b"
+        };
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const mobile = localStorage.getItem('userMobile');
+
+        let dynamicQRs = {}; // ॲडमिन कडून येणारे सर्व QR इथे राहतील
+
+        // १. ॲडमिन ने सेट केलेले सर्व कस्टमाइज्ड QR लोड करणे
+        async function loadCustomQRs() {
+            try {
+                const snap = await getDoc(doc(db, "settings", "qrcodes"));
+                if(snap.exists()) {
+                    dynamicQRs = snap.data();
+                }
+            } catch (e) { console.error("QR Loading Error:", e); }
+        }
+
+        // २. अमाऊंट सिलेक्ट झाल्यावर QR अपडेट करणे
+        window.selectAmount = (amt, btn) => {
+            document.getElementById('rechargeAmt').value = amt;
+            document.getElementById('selectedDisplay').innerText = "₹" + amt;
+            
+            // ॲडमिन पॅनल मध्ये या रकमेसाठी फोटो असेल तर तो दाखवा, नसेल तर ग्लोबल दाखवा
+            if(dynamicQRs && dynamicQRs[amt]) {
+                document.getElementById('qrDisplay').src = dynamicQRs[amt];
+            } else {
+                // डिफॉल्ट इमेज जर विशिष्ट रक्कमेचा QR नसेल तर
+                fetchSettings(); 
+            }
+
+            document.querySelectorAll('.amt-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+        };
+
+        window.showAlert = (msg, isSuccess = false) => {
+            const modal = document.getElementById('customAlert');
+            const icon = document.getElementById('alertIcon');
+            const title = document.getElementById('alertTitle');
+            document.getElementById('alertMsg').innerText = msg;
+            if(isSuccess) {
+                icon.innerHTML = '<i class="fas fa-check-circle"></i>';
+                icon.className = "w-16 h-16 bg-green-100 text-green-500 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl";
+                title.innerText = "Success";
+            } else {
+                icon.innerHTML = '<i class="fas fa-exclamation-triangle"></i>';
+                icon.className = "w-16 h-16 bg-red-100 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl";
+                title.innerText = "Notice";
+            }
+            modal.classList.add('modal-active');
+        };
+
+        window.closeAlert = () => document.getElementById('customAlert').classList.remove('modal-active');
+
+        async function fetchSettings() {
+            const snap = await getDoc(doc(db, "settings", "global"));
+            if(snap.exists()) {
+                const data = snap.data();
+                // फक्त सुरुवातीला ग्लोबल QR दाखवण्यासाठी
+                if(!document.getElementById('rechargeAmt').value) {
+                    if(data.qr) document.getElementById('qrDisplay').src = data.qr;
+                }
+                if(data.upi) document.getElementById('upiId').innerText = data.upi;
+            }
+        }
+
+        async function fetchHistory() {
+            if(!mobile) return;
+            const historyBox = document.getElementById('rechargeHistory');
+            try {
+                const q = query(collection(db, "recharges"), where("userMobile", "==", mobile), orderBy("timestamp", "desc"));
+                const snap = await getDocs(q);
+                if(snap.empty) {
+                    historyBox.innerHTML = `<p class="text-center text-[10px] font-bold text-slate-300 py-4 uppercase italic">No History Found</p>`;
+                    return;
+                }
+                historyBox.innerHTML = "";
+                snap.forEach(d => {
+                    const r = d.data();
+                    const dateObj = new Date(r.timestamp);
+                    const dateStr = dateObj.toLocaleDateString('en-GB'); 
+                    const timeStr = dateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+                    let statusColor = "text-orange-500 bg-orange-50";
+                    if(r.status === "Approved") statusColor = "text-green-500 bg-green-50";
+                    if(r.status === "Rejected") statusColor = "text-red-500 bg-red-50";
+
+                    const remarkHTML = r.remark ? `<p class="text-[9px] font-bold text-slate-500 mt-2 italic border-t border-slate-50 pt-2">${r.remark}</p>` : "";
+
+                    historyBox.innerHTML += `
+                        <div class="bg-white p-4 rounded-3xl shadow-sm border border-slate-100">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <p class="text-xs font-black text-slate-700 italic">₹${r.amount}</p>
+                                    <p class="text-[8px] font-bold text-slate-400 uppercase tracking-tighter mt-0.5">UTR: ${r.utr}</p>
+                                    <p class="text-[7px] font-black text-slate-400 uppercase mt-1">
+                                        <i class="far fa-clock mr-1"></i> ${dateStr} | ${timeStr}
+                                    </p>
+                                </div>
+                                <span class="text-[8px] font-black px-3 py-1.5 rounded-full uppercase italic ${statusColor}">${r.status}</span>
+                            </div>
+                            ${remarkHTML}
+                        </div>`;
+                });
+            } catch (e) {
+                historyBox.innerHTML = `<p class="text-center text-[8px] text-red-300 italic">History unavailable</p>`;
+            }
+        }
+
+        window.copyUPI = () => {
+            const upi = document.getElementById('upiId').innerText;
+            if(upi && upi !== "loading...") {
+                navigator.clipboard.writeText(upi);
+                showAlert("UPI ID Copied!", true);
+            }
+        };
+
+        document.getElementById('finalSubmitBtn').onclick = async function() {
+            const amt = document.getElementById('rechargeAmt').value;
+            const utr = document.getElementById('utrNumber').value;
+
+            if(!amt) { showAlert("Please select a recharge amount first!"); return; }
+            if(utr.length !== 12) { showAlert("UTR Number must be exactly 12 digits!"); return; }
+
+            try {
+                this.innerText = "SUBMITTING...";
+                this.disabled = true;
+
+                await addDoc(collection(db, "recharges"), {
+                    userMobile: mobile,
+                    amount: Number(amt),
+                    utr: utr,
+                    status: "Pending",
+                    remark: "", 
+                    timestamp: Date.now()
+                });
+
+                showAlert("Recharge request sent successfully!", true);
+                setTimeout(() => { location.reload(); }, 2000);
+            } catch (e) {
+                showAlert("Error: " + e.message);
+                this.innerText = "SUBMIT RECHARGE";
+                this.disabled = false;
+            }
+        };
+
+        loadCustomQRs(); // कस्टमाइज्ड QR लोड करा
+        fetchSettings();
+        fetchHistory();
+    </script>
+</body>
+</html>

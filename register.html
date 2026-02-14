@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register | SunPower Master</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .modal-active { display: flex !important; animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        
+        /* Custom Checkbox Style */
+        .custom-checkbox { width: 18px; height: 18px; cursor: pointer; accent-color: #2563eb; }
+    </style>
+</head>
+<body class="bg-slate-50 min-h-screen flex items-center justify-center p-6">
+
+    <div id="customAlert" class="fixed inset-0 bg-black/60 z-[200] hidden items-center justify-center p-6 backdrop-blur-sm">
+        <div class="bg-white w-full max-w-xs rounded-[40px] p-8 text-center shadow-2xl">
+            <div id="alertIcon" class="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl">
+                <i class="fas fa-info-circle"></i>
+            </div>
+            <h3 id="alertTitle" class="font-black text-slate-800 uppercase italic text-sm mb-2">Notice</h3>
+            <p id="alertMsg" class="text-xs font-bold text-slate-500 leading-relaxed mb-6"></p>
+            <button id="alertBtn" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-black uppercase text-[10px] tracking-widest shadow-lg active:scale-95 transition-all">Dismiss</button>
+        </div>
+    </div>
+
+    <div class="w-full max-w-md bg-white rounded-[40px] shadow-2xl overflow-hidden border border-slate-100">
+        <div class="bg-blue-600 p-10 text-white text-center">
+            <h1 class="text-3xl font-black italic uppercase tracking-tighter">Sun Power</h1>
+            <p class="text-[10px] font-bold opacity-80 mt-1 uppercase tracking-widest">Create Your Account</p>
+        </div>
+
+        <div class="p-8 space-y-5">
+            <div>
+                <label class="text-[10px] font-black text-blue-600 uppercase ml-2 tracking-widest">Mobile Number</label>
+                <div class="relative flex items-center bg-slate-50 rounded-2xl border border-transparent focus-within:border-blue-500 transition-all overflow-hidden">
+                    <div class="flex items-center pl-4 pr-2 border-r border-slate-200 bg-slate-100/50 h-14">
+                        <span class="text-xs font-black text-blue-600">+91</span>
+                    </div>
+                    <input type="tel" id="regMobile" placeholder="10 DIGIT NUMBER" maxlength="10" oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 10);" class="w-full px-4 py-4 bg-transparent outline-none font-bold text-gray-700 tracking-widest">
+                </div>
+            </div>
+
+            <div>
+                <label class="text-[10px] font-black text-blue-600 uppercase ml-2 tracking-widest">Login Password</label>
+                <div class="relative flex items-center bg-slate-50 rounded-2xl border border-transparent focus-within:border-blue-500 transition-all">
+                    <i class="fas fa-lock absolute left-4 text-slate-300 text-sm"></i>
+                    <input type="password" id="regPass" placeholder="Set Password" class="w-full pl-10 pr-12 py-4 bg-transparent outline-none font-bold text-gray-700">
+                    <button type="button" onclick="toggleRegPassword()" class="absolute right-4 focus:outline-none">
+                        <i id="eyeIcon" class="fas fa-eye text-slate-300 text-sm"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div>
+                <label class="text-[10px] font-black text-blue-600 uppercase ml-2 tracking-widest">Referral Code (Optional)</label>
+                <div class="relative">
+                    <i class="fas fa-user-friends absolute left-4 top-4 text-slate-300 text-sm"></i>
+                    <input type="tel" id="regRefer" value="12121212" maxlength="10" oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 10);" placeholder="Inviter Number" class="w-full pl-10 pr-4 py-4 bg-blue-50/50 rounded-2xl outline-none font-black text-blue-600 border border-blue-100">
+                </div>
+            </div>
+
+            <div class="flex items-start gap-3 px-2 py-2">
+                <input type="checkbox" id="regTerms" class="custom-checkbox mt-0.5">
+                <label for="regTerms" class="text-[10px] text-slate-500 font-bold leading-tight">
+                    I agree to the <a href="terms.html" class="text-blue-600 underline">Terms & Conditions</a> and confirm that I am 18+ years old.
+                </label>
+            </div>
+
+            <button id="registerBtn" class="w-full bg-blue-600 text-white py-5 rounded-2xl font-black text-lg shadow-lg shadow-blue-200 active:scale-95 transition-all uppercase italic tracking-widest">
+                Register Now
+            </button>
+
+            <p class="text-center text-xs font-bold text-slate-400 uppercase">
+                Already have an account? <a href="login.html" class="text-blue-600 underline">Login</a>
+            </p>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, doc, getDoc, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyA3k5ByUuJ-1jtVovgZMxsw1LBaBkn_nDo",
+            authDomain: "new-investment-web.firebaseapp.com",
+            projectId: "new-investment-web",
+            storageBucket: "new-investment-web.firebasestorage.app",
+            messagingSenderId: "1078188475858",
+            appId: "1:1078188475858:web:b3777ea127aae8083740b"
+        };
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        window.toggleRegPassword = () => {
+            const passInput = document.getElementById('regPass');
+            const eyeIcon = document.getElementById('eyeIcon');
+            if (passInput.type === "password") {
+                passInput.type = "text"; eyeIcon.classList.replace('fa-eye', 'fa-eye-slash');
+            } else {
+                passInput.type = "password"; eyeIcon.classList.replace('fa-eye-slash', 'fa-eye');
+            }
+        };
+
+        window.showAlert = (msg, type = 'info', onDismiss = null) => {
+            const modal = document.getElementById('customAlert');
+            const icon = document.getElementById('alertIcon');
+            const title = document.getElementById('alertTitle');
+            const btn = document.getElementById('alertBtn');
+            document.getElementById('alertMsg').innerText = msg;
+            
+            if(type === 'success') {
+                icon.innerHTML = '<i class="fas fa-check-circle text-green-500"></i>';
+                icon.className = "w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl";
+                title.innerText = "Success";
+            } else if(type === 'error') {
+                icon.innerHTML = '<i class="fas fa-times-circle text-red-500"></i>';
+                icon.className = "w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl";
+                title.innerText = "Error";
+            } else {
+                icon.innerHTML = '<i class="fas fa-info-circle text-blue-600"></i>';
+                icon.className = "w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl";
+                title.innerText = "Notice";
+            }
+            btn.onclick = () => { closeAlert(); if(onDismiss) onDismiss(); };
+            modal.classList.add('modal-active');
+        };
+
+        window.closeAlert = () => { document.getElementById('customAlert').classList.remove('modal-active'); };
+
+        document.getElementById('registerBtn').onclick = async () => {
+            // १. चेकबॉक्स व्हॅलिडेशन
+            const isTermsAccepted = document.getElementById('regTerms').checked;
+            if(!isTermsAccepted) {
+                showAlert("Please check the Terms & Conditions to proceed!", "info");
+                return;
+            }
+
+            const mobile = document.getElementById('regMobile').value;
+            const pass = document.getElementById('regPass').value;
+            let referBy = document.getElementById('regRefer').value || "12121212";
+
+            if (mobile.length !== 10) { showAlert("Valid 10-digit number required!", "error"); return; }
+            if (pass.length < 6) { showAlert("Password too short!", "error"); return; }
+
+            try {
+                const userRef = doc(db, "users", mobile);
+                const userSnap = await getDoc(userRef);
+
+                if (userSnap.exists()) {
+                    showAlert("Mobile number already registered!", "error");
+                    return;
+                }
+
+                await setDoc(userRef, {
+                    mobile: mobile,
+                    password: pass,
+                    balance: 0,
+                    invitedBy: referBy,
+                    regDate: Date.now()
+                });
+
+                if (referBy && referBy !== mobile) {
+                    const inviterRef = doc(db, "users", referBy);
+                    const inviterSnap = await getDoc(inviterRef);
+                    if (inviterSnap.exists()) {
+                        const currentBal = Number(inviterSnap.data().balance || 0);
+                        await updateDoc(inviterRef, { balance: currentBal + 10 });
+                    }
+                }
+
+                showAlert("Registration Successful!", "success", () => {
+                    localStorage.setItem('userMobile', mobile);
+                    window.location.href = "index.html";
+                });
+            } catch (e) { showAlert("Error: " + e.message, "error"); }
+        };
+    </script>
+</body>
+</html>

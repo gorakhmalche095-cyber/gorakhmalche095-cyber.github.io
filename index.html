@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home | SunPower</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .modal-active { display: flex !important; animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+        .vip-card { border: 1px solid #fbbf24; background: linear-gradient(to bottom right, #ffffff, #fffdf0); }
+        .fade-slide { transition: opacity 0.8s ease-in-out; }
+    </style>
+</head>
+<body class="bg-slate-50 pb-24 font-sans">
+
+    <div id="customAlert" class="fixed inset-0 bg-black/60 z-[200] hidden items-center justify-center p-6 backdrop-blur-sm">
+        <div class="bg-white w-full max-w-xs rounded-[40px] p-8 text-center shadow-2xl">
+            <div id="alertIcon" class="w-16 h-16 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl">
+                <i class="fas fa-info-circle"></i>
+            </div>
+            <h3 id="alertTitle" class="font-black text-slate-800 uppercase italic text-sm mb-2">Notice</h3>
+            <p id="alertMsg" class="text-xs font-bold text-slate-500 leading-relaxed mb-6"></p>
+            <div id="alertButtons" class="flex gap-3">
+                <button id="cancelBtn" onclick="closeAlert()" class="hidden flex-1 bg-slate-100 text-slate-500 py-4 rounded-2xl font-black uppercase text-[10px] tracking-widest">Cancel</button>
+                <button id="confirmBtn" onclick="closeAlert()" class="flex-1 bg-indigo-600 text-white py-4 rounded-2xl font-black uppercase text-[10px] tracking-widest shadow-lg shadow-indigo-100">Dismiss</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="notifModal" class="fixed inset-0 bg-black/60 z-[100] hidden flex items-center justify-center p-6 backdrop-blur-sm">
+        <div class="bg-white w-full max-sm rounded-[40px] p-6 shadow-2xl">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="font-black uppercase italic text-indigo-700 tracking-tighter">System Alerts</h3>
+                <button onclick="toggleNotif()" class="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center">
+                    <i class="fas fa-times text-gray-400"></i>
+                </button>
+            </div>
+            <div id="notifList" class="space-y-3 max-h-80 overflow-y-auto pr-2"></div>
+        </div>
+    </div>
+
+    <div class="bg-gradient-to-br from-indigo-800 to-blue-600 p-8 pt-12 text-white rounded-b-[55px] shadow-2xl relative overflow-hidden">
+        <div class="flex justify-between items-center mb-6 relative z-10">
+            <div>
+                <h1 class="text-3xl font-black italic tracking-tighter uppercase text-yellow-400">SunPower</h1>
+                <p class="text-[9px] font-bold opacity-70 tracking-widest uppercase">Solar Innovation Hub</p>
+            </div>
+            <button onclick="toggleNotif()" class="relative bg-white/20 w-12 h-12 rounded-2xl flex items-center justify-center backdrop-blur-md border border-white/20 active:scale-90 transition-all">
+                <i class="fas fa-bell text-yellow-300"></i>
+                <span id="notifDot" class="absolute top-3 right-3 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-indigo-800 hidden"></span>
+            </button>
+        </div>
+
+        <div class="bg-white/10 p-6 rounded-[40px] backdrop-blur-xl border border-white/20">
+            <div class="flex justify-between items-center">
+                <div>
+                    <p class="text-[10px] font-black uppercase opacity-80 tracking-widest">Total Wallet Balance</p>
+                    <h2 class="text-4xl font-black mt-1">₹<span id="userBalance">0.00</span></h2>
+                </div>
+                <div class="bg-green-500/20 border border-green-400/30 px-3 py-1 rounded-full">
+                    <p class="text-[8px] font-black text-green-300 uppercase tracking-tighter italic">Daily Withdrawal</p>
+                </div>
+            </div>
+            <div class="grid grid-cols-2 gap-4 mt-6 border-t border-white/10 pt-4 text-[10px] font-bold opacity-80 uppercase tracking-tighter">
+                <p>Min Withdraw: ₹200</p>
+                <p class="text-right text-yellow-400 italic">Withdrawal: Anytime 24/7</p>
+            </div>
+            <div class="flex gap-3 mt-6">
+                <button onclick="window.location.href='recharge.html'" class="flex-1 bg-yellow-400 text-indigo-900 py-4 rounded-2xl font-black uppercase text-xs shadow-lg active:scale-95 transition-all">Recharge</button>
+                <button onclick="window.location.href='withdraw.html'" class="flex-1 bg-white text-indigo-600 py-4 rounded-2xl font-black uppercase text-xs shadow-lg active:scale-95 transition-all">Withdraw</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="bannerSection" class="px-6 mt-6 hidden">
+        <div class="w-full aspect-video rounded-[40px] overflow-hidden shadow-sm border-2 border-white relative bg-slate-200">
+            <div id="sliderWrapper" class="w-full h-full relative"></div>
+            <div id="sliderDots" class="absolute bottom-3 left-0 right-0 flex justify-center gap-1.5"></div>
+        </div>
+    </div>
+
+    <div class="p-6 grid grid-cols-3 gap-4">
+        <div onclick="window.location.href='refer.html'" class="bg-white p-4 rounded-3xl text-center shadow-sm border border-slate-100 cursor-pointer">
+            <i class="fas fa-gift text-indigo-600 text-lg"></i>
+            <p class="text-[8px] font-black uppercase text-slate-500 mt-1">Refer</p>
+        </div>
+        <div id="channelBtn" class="bg-white p-4 rounded-3xl text-center shadow-sm border border-slate-100 cursor-pointer">
+            <i class="fab fa-telegram text-blue-500 text-lg"></i>
+            <p class="text-[8px] font-black uppercase text-slate-500 mt-1">Channel</p>
+        </div>
+        <div id="supportBtn" class="bg-white p-4 rounded-3xl text-center shadow-sm border border-slate-100 cursor-pointer">
+            <i class="fas fa-headset text-pink-500 text-lg"></i>
+            <p class="text-[8px] font-black uppercase text-slate-500 mt-1">Support</p>
+        </div>
+    </div>
+
+    <div class="px-6 mb-8">
+        <h3 class="font-black text-slate-800 uppercase italic tracking-tighter mb-4 flex items-center">
+            <i class="fas fa-bolt text-yellow-500 mr-2"></i> Investment Plans
+        </h3>
+        <div id="plansContainer" class="space-y-4"></div>
+    </div>
+
+    <div class="px-6 pb-10">
+        <h3 class="font-black text-amber-600 uppercase italic tracking-tighter mb-4 flex items-center">
+            <i class="fas fa-crown text-amber-500 mr-2"></i> VIP Plans
+        </h3>
+        <div id="vipPlansContainer" class="space-y-4"></div>
+    </div>
+
+    <div class="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-md border-t flex justify-around py-4 shadow-2xl z-50 rounded-t-[40px]">
+        <div onclick="window.location.href='index.html'" class="text-center text-indigo-600 cursor-pointer">
+            <i class="fas fa-home text-xl"></i>
+            <p class="text-[10px] font-black mt-1 uppercase italic">Home</p>
+        </div>
+        <div onclick="window.location.href='refer.html'" class="text-center text-slate-400 cursor-pointer">
+            <i class="fas fa-users text-xl"></i>
+            <p class="text-[10px] font-black mt-1 uppercase italic">Refer</p>
+        </div>
+        <div onclick="window.location.href='mine.html'" class="text-center text-slate-400 cursor-pointer">
+            <i class="fas fa-user text-xl"></i>
+            <p class="text-[10px] font-black mt-1 uppercase italic">Profile</p>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, doc, getDoc, collection, getDocs, query, where, orderBy, setDoc, updateDoc, increment, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyA3k5ByUuJ-1jtVovgZMxsw1LBaBkn_nDo",
+            authDomain: "new-investment-web.firebaseapp.com",
+            projectId: "new-investment-web",
+            storageBucket: "new-investment-web.firebasestorage.app",
+            messagingSenderId: "1078188475858",
+            appId: "1:1078188475858:web:b3777ea127aae8083740b"
+        };
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        const mobile = localStorage.getItem('userMobile');
+        if (!mobile) window.location.href = "login.html";
+
+        // --- NEW SECURITY LISTENER (TERMINATE LOGOUT) ---
+        const userRef = doc(db, "users", mobile);
+        onSnapshot(userRef, (docSnap) => {
+            if (!docSnap.exists()) {
+                localStorage.clear();
+                alert("Critical Security Alert: Your account has been terminated by the administrator.");
+                window.location.href = "login.html";
+            }
+        });
+
+        let currentGlobalNotifId = "";
+
+        window.showAlert = (msg, type = 'info', onConfirm = null) => {
+            const modal = document.getElementById('customAlert');
+            const icon = document.getElementById('alertIcon');
+            const title = document.getElementById('alertTitle');
+            const confirmBtn = document.getElementById('confirmBtn');
+            const cancelBtn = document.getElementById('cancelBtn');
+            document.getElementById('alertMsg').innerText = msg;
+            cancelBtn.classList.add('hidden');
+            
+            if(type === 'success') {
+                icon.innerHTML = '<i class="fas fa-check-circle text-green-500"></i>';
+                title.innerText = "SUCCESS";
+            } else if(type === 'error') {
+                icon.innerHTML = '<i class="fas fa-times-circle text-red-500"></i>';
+                title.innerText = "FAILED";
+            } else if(type === 'confirm') {
+                icon.innerHTML = '<i class="fas fa-question-circle text-indigo-600"></i>';
+                title.innerText = "CONFIRMATION";
+                confirmBtn.innerText = "Confirm";
+                cancelBtn.classList.remove('hidden');
+            }
+            confirmBtn.onclick = () => { closeAlert(); if(onConfirm) onConfirm(); };
+            modal.classList.add('modal-active');
+        };
+
+        window.closeAlert = () => document.getElementById('customAlert').classList.remove('modal-active');
+
+        window.toggleNotif = () => {
+            const modal = document.getElementById('notifModal');
+            const dot = document.getElementById('notifDot');
+            modal.classList.toggle('hidden');
+            if(!modal.classList.contains('hidden')) {
+                dot.classList.add('hidden');
+                if(currentGlobalNotifId) localStorage.setItem('seenNotifId', currentGlobalNotifId);
+            }
+        };
+
+        const getFormattedDate = () => {
+            const now = new Date();
+            return now.toLocaleDateString('en-GB') + ", " + now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
+        };
+
+        async function fetchUser() {
+            const snap = await getDoc(userRef);
+            if(snap.exists()) {
+                const data = snap.data();
+                document.getElementById('userBalance').innerText = Number(data.balance || 0).toFixed(2);
+                return data;
+            }
+            return null;
+        }
+
+        async function fetchNotifications() {
+            const notifList = document.getElementById('notifList');
+            const notifDot = document.getElementById('notifDot');
+            let listHtml = "";
+            let hasNew = false;
+            const currentTimeStr = getFormattedDate();
+
+            const settingsSnap = await getDoc(doc(db, "settings", "global"));
+            if(settingsSnap.exists()) {
+                const data = settingsSnap.data();
+                if(data.bannerUrl) {
+                    const bannerSec = document.getElementById('bannerSection');
+                    const wrapper = document.getElementById('sliderWrapper');
+                    const dotsCon = document.getElementById('sliderDots');
+                    const urls = data.bannerUrl.split(',').map(u => u.trim()).filter(u => u !== "");
+                    
+                    if(urls.length > 0) {
+                        bannerSec.classList.remove('hidden');
+                        let currentIdx = 0;
+                        const renderSlide = (idx) => {
+                            wrapper.innerHTML = `<img src="${urls[idx]}" class="w-full h-full object-cover fade-slide absolute inset-0 opacity-0">`;
+                            dotsCon.innerHTML = urls.map((_, i) => `<div class="w-1.5 h-1.5 rounded-full ${i === idx ? 'bg-white' : 'bg-white/40'}"></div>`).join('');
+                            setTimeout(() => { if(wrapper.querySelector('img')) wrapper.querySelector('img').style.opacity = '1'; }, 50);
+                        };
+                        renderSlide(0);
+                        if(urls.length > 1) setInterval(() => { currentIdx = (currentIdx + 1) % urls.length; renderSlide(currentIdx); }, 5000);
+                    }
+                }
+                if(data.notice) {
+                    currentGlobalNotifId = data.noticeId || "1";
+                    if(localStorage.getItem('seenNotifId') !== currentGlobalNotifId) hasNew = true;
+                    listHtml += `<div class="bg-yellow-50 p-4 rounded-3xl border border-yellow-100 mb-2">
+                        <div class="flex justify-between items-start mb-1">
+                            <p class="text-[9px] font-black text-yellow-600 uppercase italic">Important Notice</p>
+                            <p class="text-[7px] font-bold text-slate-400">${currentTimeStr}</p>
+                        </div>
+                        <p class="text-xs font-bold text-gray-700">${data.notice}</p>
+                    </div>`;
+                }
+            }
+
+            const userSnap = await getDoc(userRef);
+            if(userSnap.exists() && userSnap.data().personalMsg) {
+                hasNew = true; 
+                listHtml += `<div class="bg-indigo-50 p-4 rounded-3xl border border-indigo-100 mb-2">
+                    <div class="flex justify-between items-start mb-1">
+                        <p class="text-[9px] font-black text-indigo-600 uppercase italic">Private Message</p>
+                        <p class="text-[7px] font-bold text-slate-400">${currentTimeStr}</p>
+                    </div>
+                    <p class="text-xs font-bold text-gray-700">${userSnap.data().personalMsg}</p>
+                </div>`;
+            }
+
+            notifList.innerHTML = listHtml || `<p class="text-center text-xs py-10 opacity-30 font-bold uppercase">No New Alerts</p>`;
+            if(hasNew) notifDot.classList.remove('hidden');
+        }
+
+        async function fetchPlans() {
+            const q = query(collection(db, "plans"), orderBy("price", "asc"));
+            const snap = await getDocs(q);
+            const regCon = document.getElementById('plansContainer');
+            const vipCon = document.getElementById('vipPlansContainer');
+            regCon.innerHTML = ""; vipCon.innerHTML = "";
+
+            snap.forEach(d => {
+                const p = d.data();
+                const isVip = p.name.toUpperCase().includes("VIP");
+                const html = `<div class="${isVip ? 'vip-card shadow-amber-100' : 'bg-white border-slate-100'} p-5 rounded-[45px] shadow-sm border flex gap-4 items-center relative overflow-hidden">
+                        <div class="absolute top-0 right-0 ${isVip ? 'bg-amber-100 text-amber-700' : 'bg-green-50 text-green-600'} px-4 py-1.5 rounded-bl-3xl text-[8px] font-black uppercase italic">${isVip ? 'VIP Privilege' : 'Daily Pay'}</div>
+                        <img src="${p.image}" class="w-24 h-24 rounded-[35px] object-cover bg-slate-50 shadow-inner">
+                        <div class="flex-1">
+                            <h4 class="font-black ${isVip ? 'text-amber-900' : 'text-slate-800'} uppercase italic text-sm tracking-tighter">${p.name}</h4>
+                            <p class="text-[9px] font-bold text-green-600 uppercase italic mb-1">Daily Withdrawal Available</p>
+                            <div class="grid grid-cols-3 gap-1 mt-3 text-xs">
+                                <div><p class="text-[7px] font-bold text-slate-400 uppercase leading-none">Daily</p><p class="font-black text-indigo-600">₹${p.daily}</p></div>
+                                <div><p class="text-[7px] font-bold text-slate-400 uppercase leading-none text-center">Total</p><p class="font-black text-green-600 text-center">₹${p.totalIncome || 0}</p></div>
+                                <div><p class="text-[7px] font-bold text-slate-400 uppercase leading-none text-right">Days</p><p class="font-black text-gray-800 text-right">${p.days}</p></div>
+                            </div>
+                            <div class="flex items-center justify-between mt-4">
+                                <span class="text-xl font-black text-slate-900 italic tracking-tighter">₹${p.price}</span>
+                                <button onclick="buyPlan('${d.id}', '${p.name}', ${p.price})" class="${isVip ? 'bg-amber-600' : 'bg-indigo-600'} text-white px-6 py-2.5 rounded-2xl text-[10px] font-black uppercase italic shadow-lg">Invest Now</button>
+                            </div>
+                        </div>
+                    </div>`;
+                isVip ? vipCon.innerHTML += html : regCon.innerHTML += html;
+            });
+        }
+
+        window.buyPlan = async (id, name, price) => {
+            const user = await fetchUser();
+            if (!user || user.balance < price) return showAlert("Insufficient Balance!", "error", () => window.location.href = "recharge.html");
+
+            showAlert(`Invest ₹${price} in ${name}?`, "confirm", async () => {
+                try {
+                    const planSnap = await getDoc(doc(db, "plans", id));
+                    const p = planSnap.data();
+                    
+                    await updateDoc(userRef, { 
+                        balance: increment(-price),
+                        personalMsg: `New Investment: Successfully joined ${name}!` 
+                    });
+
+                    await setDoc(doc(db, "investments", "INV" + Date.now()), { 
+                        userMobile: mobile, 
+                        planId: id, 
+                        planName: name, 
+                        buyPrice: price, 
+                        dailyIncome: Number(p.daily), 
+                        validity: Number(p.days),      
+                        date: new Date().toISOString(), 
+                        status: "Active",
+                        daysProcessed: 0
+                    });
+
+                    showAlert("Investment Successful!", "success", () => window.location.href = "mine.html");
+                } catch (e) {
+                    showAlert("Transaction failed.", "error");
+                }
+            });
+        };
+
+        async function setupSupport() {
+            const snap = await getDoc(doc(db, "settings", "global"));
+            if(snap.exists()) {
+                const url = snap.data().support;
+                document.getElementById('supportBtn').onclick = () => window.open(url, '_blank');
+                document.getElementById('channelBtn').onclick = () => window.open(url, '_blank');
+            }
+        }
+
+        fetchUser(); fetchNotifications(); fetchPlans(); setupSupport();
+    </script>
+</body>
+</html>

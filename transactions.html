@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transactions | SunPower</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .tab-active { background-color: #1e293b !important; color: white !important; transform: scale(0.95); }
+    </style>
+</head>
+<body class="bg-slate-50 min-h-screen pb-10">
+
+    <div class="bg-blue-600 p-8 text-white text-center rounded-b-[45px] shadow-xl relative">
+        <button onclick="window.location.href='./mine.html'" class="absolute left-6 top-8 bg-white/20 w-10 h-10 rounded-full flex items-center justify-center active:scale-90 transition-all">
+            <i class="fas fa-arrow-left text-sm"></i>
+        </button>
+        <h1 class="text-xl font-black uppercase italic tracking-tighter">Transaction Log</h1>
+        <p class="text-[10px] font-bold opacity-80 uppercase mt-1">Your Passbook Details</p>
+    </div>
+
+    <div class="flex gap-2 p-6 overflow-x-auto no-scrollbar">
+        <button id="btn-all" onclick="filterTrans('all')" class="tab-active flex-shrink-0 px-6 py-2.5 rounded-2xl bg-white text-slate-400 text-[10px] font-black uppercase italic shadow-sm border border-slate-100 transition-all">All</button>
+        <button id="btn-recharge" onclick="filterTrans('recharge')" class="flex-shrink-0 px-6 py-2.5 rounded-2xl bg-white text-slate-400 text-[10px] font-black uppercase italic shadow-sm border border-slate-100 transition-all">Recharge</button>
+        <button id="btn-withdraw" onclick="filterTrans('withdraw')" class="flex-shrink-0 px-6 py-2.5 rounded-2xl bg-white text-slate-400 text-[10px] font-black uppercase italic shadow-sm border border-slate-100 transition-all">Withdraw</button>
+        <button id="btn-income" onclick="filterTrans('income')" class="flex-shrink-0 px-6 py-2.5 rounded-2xl bg-white text-slate-400 text-[10px] font-black uppercase italic shadow-sm border border-slate-100 transition-all">Income</button>
+    </div>
+
+    <div id="masterHistory" class="px-6 space-y-4">
+        <div class="text-center py-20">
+            <i class="fas fa-circle-notch fa-spin text-blue-600 text-2xl mb-4"></i>
+            <p class="text-slate-300 font-bold uppercase italic text-[10px]">Syncing with Database...</p>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, query, where, getDocs, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyA3k5ByUuJ-1jtVovgZMxsw1LBaBkn_nDo",
+            authDomain: "new-investment-web.firebaseapp.com",
+            projectId: "new-investment-web",
+            storageBucket: "new-investment-web.firebasestorage.app",
+            messagingSenderId: "1078188475858",
+            appId: "1:1078188475858:web:b3777ea127aae8083740b"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const mobile = localStorage.getItem('userMobile');
+
+        let allLogs = [];
+
+        async function fetchAllData() {
+            if(!mobile) { window.location.href='./login.html'; return; }
+            
+            try {
+                // Clear old logs before fetching
+                allLogs = [];
+
+                // 1. Fetch Recharges
+                const rSnap = await getDocs(query(collection(db, "recharges"), where("userMobile", "==", mobile)));
+                rSnap.forEach(doc => {
+                    const d = doc.data();
+                    allLogs.push({ ...d, id: doc.id, type: 'recharge', icon: 'wallet', color: 'blue' });
+                });
+
+                // 2. Fetch Withdrawals
+                const wSnap = await getDocs(query(collection(db, "withdrawals"), where("userMobile", "==", mobile)));
+                wSnap.forEach(doc => {
+                    const d = doc.data();
+                    allLogs.push({ ...d, id: doc.id, type: 'withdraw', icon: 'arrow-up-right-from-square', color: 'red' });
+                });
+
+                // 3. Fetch Income (earnings collection) - This links with your mine.html logic
+                const iSnap = await getDocs(query(collection(db, "earnings"), where("userMobile", "==", mobile)));
+                iSnap.forEach(doc => {
+                    const d = doc.data();
+                    allLogs.push({ ...d, id: doc.id, type: 'income', icon: 'coins', color: 'green' });
+                });
+
+                // Sort by timestamp (newest first)
+                allLogs.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+                renderUI(allLogs);
+
+            } catch (e) {
+                console.error("Fetch Error:", e);
+                document.getElementById('masterHistory').innerHTML = `<p class="text-center text-red-400 text-xs italic uppercase">Error loading data</p>`;
+            }
+        }
+
+        window.renderUI = (data) => {
+            const container = document.getElementById('masterHistory');
+            if(data.length === 0) {
+                container.innerHTML = `<div class="text-center py-20 opacity-30 font-black italic uppercase text-xs">No Records Found</div>`;
+                return;
+            }
+
+            container.innerHTML = "";
+            data.forEach(item => {
+                const date = new Date(item.timestamp).toLocaleDateString('en-GB');
+                const time = new Date(item.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                
+                const isDebit = item.type === 'withdraw';
+                // Income is always green and Success
+                const statusColor = (item.status === 'Approved' || item.status === 'Completed' || item.type === 'income') ? 'text-green-500' : (item.status === 'Rejected' ? 'text-red-500' : 'text-orange-500');
+
+                container.innerHTML += `
+                    <div class="bg-white p-5 rounded-[30px] shadow-sm border border-slate-100 flex items-center justify-between">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 bg-slate-50 text-slate-600 rounded-2xl flex items-center justify-center text-lg">
+                                <i class="fas fa-${item.icon}"></i>
+                            </div>
+                            <div>
+                                <h4 class="text-[11px] font-black text-slate-800 italic uppercase">${item.type}</h4>
+                                <p class="text-[8px] font-bold text-slate-400 uppercase mt-0.5">${date} | ${time}</p>
+                                ${item.remark ? `<p class="text-[9px] text-slate-500 italic mt-1 font-medium leading-tight border-t border-slate-50 pt-1">${item.remark}</p>` : ''}
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-sm font-black ${isDebit ? 'text-red-600' : 'text-green-600'} italic">
+                                ${isDebit ? '-' : '+'}₹${item.amount}
+                            </p>
+                            <span class="text-[7px] font-black uppercase italic ${statusColor}">${item.status || 'Success'}</span>
+                        </div>
+                    </div>`;
+            });
+        };
+
+        window.filterTrans = (type) => {
+            document.querySelectorAll('button[id^="btn-"]').forEach(b => b.classList.remove('tab-active'));
+            document.getElementById('btn-' + type).classList.add('tab-active');
+
+            if(type === 'all') renderUI(allLogs);
+            else renderUI(allLogs.filter(l => l.type === type));
+        };
+
+        // Run fetch on load
+        fetchAllData();
+    </script>
+</body>
+</html>

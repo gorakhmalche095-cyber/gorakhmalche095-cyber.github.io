@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Profile | SunPower</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .modal-active { display: flex !important; animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+        /* Admin Button Animation */
+        .admin-glow { box-shadow: 0 0 15px rgba(37, 99, 235, 0.3); border: 1px solid rgba(37, 99, 235, 0.2); }
+    </style>
+</head>
+<body class="bg-gray-50 pb-24">
+
+    <div id="customAlert" class="fixed inset-0 bg-black/60 z-[200] hidden items-center justify-center p-6 backdrop-blur-sm">
+        <div class="bg-white w-full max-w-xs rounded-[40px] p-8 text-center shadow-2xl">
+            <div id="alertIcon" class="w-16 h-16 bg-red-100 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl">
+                <i class="fas fa-sign-out-alt"></i>
+            </div>
+            <h3 id="alertTitle" class="font-black text-slate-800 uppercase italic text-sm mb-2">Logout</h3>
+            <p id="alertMsg" class="text-xs font-bold text-slate-500 leading-relaxed mb-6">Are you sure you want to logout?</p>
+            <div class="flex gap-3">
+                <button onclick="closeAlert()" class="flex-1 bg-slate-100 text-slate-500 py-4 rounded-2xl font-black uppercase text-[10px] tracking-widest">Cancel</button>
+                <button id="confirmBtn" class="flex-1 bg-red-500 text-white py-4 rounded-2xl font-black uppercase text-[10px] tracking-widest shadow-lg shadow-red-100">Logout</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-blue-600 p-8 rounded-b-[50px] text-white shadow-xl relative">
+        <div class="flex items-center gap-4 mb-6">
+            <div class="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center text-2xl border border-white/30">
+                <i class="fas fa-user"></i>
+            </div>
+            <div>
+                <h2 id="userPhone" class="text-xl font-bold">Loading...</h2>
+                <p class="text-blue-100 text-xs">Verified Member <i class="fas fa-check-circle"></i></p>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-3xl p-6 shadow-lg flex justify-between items-center text-gray-800 translate-y-4">
+            <div>
+                <p class="text-gray-400 text-xs font-bold uppercase tracking-wider">Wallet Balance</p>
+                <h3 class="text-3xl font-black text-blue-600">₹ <span id="userBalance">0.00</span></h3>
+            </div>
+            <button onclick="window.location.href='recharge.html'" class="bg-yellow-400 text-blue-900 px-6 py-3 rounded-2xl font-black text-sm shadow-md">RECHARGE</button>
+        </div>
+    </div>
+
+    <div id="specialAdminArea" class="hidden px-5 mt-12">
+        <div onclick="window.location.href='admin-gate.html'" class="admin-glow flex items-center justify-between p-5 bg-blue-50 rounded-[30px] active:scale-95 transition-all cursor-pointer border-blue-200">
+            <div class="flex items-center gap-4">
+                <div class="w-10 h-10 bg-blue-600 text-white rounded-2xl flex items-center justify-center shadow-lg shadow-blue-200">
+                    <i class="fas fa-user-shield"></i>
+                </div>
+                <div>
+                    <span class="text-sm font-black text-blue-800 uppercase italic block">Admin Master Gate</span>
+                    <span class="text-[9px] font-bold text-blue-400 uppercase">Authorized Personnel Only</span>
+                </div>
+            </div>
+            <i class="fas fa-chevron-right text-blue-300 text-xs"></i>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-2 gap-4 px-5 mt-8">
+        <div class="bg-white p-4 rounded-3xl shadow-sm border border-gray-100 text-center">
+            <p class="text-gray-400 text-[10px] font-bold uppercase">Total Invested</p>
+            <p id="totalInvest" class="text-lg font-black text-gray-800">₹ 0</p>
+        </div>
+        <div class="bg-white p-4 rounded-3xl shadow-sm border border-gray-100 text-center">
+            <p class="text-gray-400 text-[10px] font-bold uppercase">Total Earnings</p>
+            <p id="totalEarn" class="text-lg font-black text-green-600">₹ 0</p>
+        </div>
+    </div>
+
+    <div class="px-5 mt-6">
+        <div onclick="window.location.href='transactions.html'" class="flex items-center justify-between p-5 bg-white rounded-[30px] shadow-sm border border-slate-50 active:scale-95 transition-all cursor-pointer">
+            <div class="flex items-center gap-4">
+                <div class="w-10 h-10 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center">
+                    <i class="fas fa-history"></i>
+                </div>
+                <span class="text-sm font-black text-slate-700 uppercase italic">All Transaction </span>
+            </div>
+            <i class="fas fa-chevron-right text-slate-300 text-xs"></i>
+        </div>
+    </div>
+
+    <div class="px-5 mt-8">
+        <h3 class="text-lg font-bold text-gray-800 mb-4 ml-1">My Projects</h3>
+        <div id="myPlansList" class="space-y-4">
+            <p class="text-gray-400 text-sm italic text-center py-4">Checking for active plans...</p>
+        </div>
+    </div>
+
+    <div class="px-5 mt-8 space-y-3">
+        <button onclick="confirmLogout()" class="w-full bg-white text-red-500 font-bold py-4 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-center gap-2">
+            <i class="fas fa-sign-out-alt"></i> Logout Account
+        </button>
+    </div>
+
+    <div class="fixed bottom-0 left-0 right-0 bg-white border-t flex justify-around py-4 shadow-2xl z-50">
+        <div class="text-center text-gray-400" onclick="window.location.href='index.html'"><i class="fas fa-home text-xl"></i><p class="text-[10px] font-bold">Home</p></div>
+        <div class="text-center text-gray-400" onclick="window.location.href='index.html'"><i class="fas fa-briefcase text-xl"></i><p class="text-[10px] font-bold">Project</p></div>
+        <div class="text-center text-blue-600"><i class="fas fa-user-tie text-xl"></i><p class="text-[10px] font-bold">Profile</p></div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, doc, getDoc, collection, query, where, getDocs, updateDoc, increment, addDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyA3k5ByUuJ-1jtVovgZMxsw1LBaBkn_nDo",
+            authDomain: "new-investment-web.firebaseapp.com",
+            projectId: "new-investment-web",
+            storageBucket: "new-investment-web.firebasestorage.app",
+            messagingSenderId: "1078188475858",
+            appId: "1:1078188475858:web:b3777ea127aae8083740b"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // --- SECURITY: ADMIN BUTTON LOGIC ---
+        function checkSpecialAdmin(mobile) {
+            const admins = ["7066223055", "9145455474"];
+            if (admins.includes(mobile)) {
+                document.getElementById('specialAdminArea').classList.remove('hidden');
+            }
+        }
+
+        window.confirmLogout = () => {
+            const modal = document.getElementById('customAlert');
+            const confirmBtn = document.getElementById('confirmBtn');
+            modal.classList.add('modal-active');
+            confirmBtn.onclick = () => {
+                localStorage.clear();
+                window.location.href = "login.html";
+            };
+        };
+
+        window.closeAlert = () => {
+            document.getElementById('customAlert').classList.remove('modal-active');
+        };
+
+        async function loadProfile() {
+            const mobile = localStorage.getItem('userMobile');
+            if (!mobile) { window.location.href = "login.html"; return; }
+
+            // Check if user is special admin
+            checkSpecialAdmin(mobile);
+
+            document.getElementById('userPhone').innerText = mobile;
+
+            const userRef = doc(db, "users", mobile);
+            const userSnap = await getDoc(userRef);
+            let currentBalance = 0;
+            if (userSnap.exists()) {
+                currentBalance = userSnap.data().balance || 0;
+            }
+
+            const q = query(collection(db, "investments"), where("userMobile", "==", mobile));
+            const querySnapshot = await getDocs(q);
+            const plansList = document.getElementById('myPlansList');
+            plansList.innerHTML = "";
+
+            let totalInv = 0;
+            let totalEarned = 0;
+            const now = new Date();
+
+            if (querySnapshot.empty) {
+                plansList.innerHTML = `<p class="text-center text-gray-400 text-sm py-4">No active projects found.</p>`;
+            }
+
+            for (const planDoc of querySnapshot.docs) {
+                const data = planDoc.data();
+                const planId = planDoc.id;
+                
+                const buyDate = new Date(data.date);
+                const dailyIncome = Number(data.dailyIncome || 0);
+                const totalValidity = Number(data.validity || data.planValidity || 30);
+
+                const diffTime = now - buyDate;
+                let daysSincePurchase = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+                if (daysSincePurchase < 0) daysSincePurchase = 0;
+                
+                const displayDays = daysSincePurchase > totalValidity ? totalValidity : daysSincePurchase;
+                const lastProcessedDays = data.daysProcessed || 0;
+                const pendingDays = Math.min(daysSincePurchase, totalValidity) - lastProcessedDays;
+
+                if (pendingDays > 0) {
+                    const pendingAmount = pendingDays * dailyIncome;
+                    const notifMsg = `Success: ₹${pendingAmount.toFixed(2)} credited from ${data.planName}. Check your wallet!`;
+
+                    await updateDoc(userRef, { 
+                        balance: increment(pendingAmount),
+                        personalMsg: notifMsg 
+                    });
+
+                    await updateDoc(doc(db, "investments", planId), { 
+                        daysProcessed: lastProcessedDays + pendingDays 
+                    });
+                    
+                    await addDoc(collection(db, "earnings"), {
+                        userMobile: mobile,
+                        amount: pendingAmount,
+                        type: "income",
+                        planName: data.planName,
+                        timestamp: Date.now(),
+                        status: "Success",
+                        remark: `${data.planName} Daily Income`
+                    });
+
+                    currentBalance += pendingAmount;
+                }
+
+                const progress = Math.round((displayDays / totalValidity) * 100);
+                const actualProcessed = data.daysProcessed || displayDays;
+                const projectProfit = actualProcessed * dailyIncome;
+
+                totalInv += Number(data.buyPrice || data.price || 0);
+                totalEarned += projectProfit;
+
+                plansList.innerHTML += `
+                    <div class="bg-white p-5 rounded-3xl shadow-sm border-l-4 border-blue-600">
+                        <div class="flex justify-between items-start mb-3">
+                            <div>
+                                <h4 class="font-bold text-gray-800 uppercase text-xs">${data.planName}</h4>
+                                <p class="text-[9px] text-gray-400 font-bold">START: ${buyDate.toLocaleDateString()}</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-blue-600 font-black text-sm">₹${data.buyPrice || data.price}</p>
+                                <p class="text-[8px] font-bold text-gray-400">Profit Earned: <span class="text-green-600">₹${projectProfit.toFixed(2)}</span></p>
+                            </div>
+                        </div>
+
+                        <div class="space-y-1.5 pt-2 border-t border-gray-50">
+                            <div class="flex justify-between text-[9px] font-black uppercase tracking-wider">
+                                <span class="text-gray-400">Progress: ${displayDays} / ${totalValidity} Days</span>
+                                <span class="text-blue-600">${progress}%</span>
+                            </div>
+                            <div class="w-full bg-gray-100 h-1.5 rounded-full overflow-hidden">
+                                <div class="bg-blue-600 h-full transition-all duration-500" style="width: ${progress}%"></div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            document.getElementById('userBalance').innerText = currentBalance.toFixed(2);
+            document.getElementById('totalInvest').innerText = "₹ " + totalInv;
+            document.getElementById('totalEarn').innerText = "₹ " + totalEarned.toFixed(2);
+        }
+
+        loadProfile();
+    </script>
+</body>
+</html>
