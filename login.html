@@ -106,16 +106,35 @@
 
         let redirectUrl = null;
 
+        // SHOW/HIDE PASSWORD
         window.togglePassword = () => {
             const passInput = document.getElementById('loginPass');
             const eyeIcon = document.getElementById('eyeIcon');
             if (passInput.type === "password") {
-                passInput.type = "text"; eyeIcon.classList.replace('fa-eye', 'fa-eye-slash');
+                passInput.type = "text";
+                eyeIcon.classList.replace('fa-eye', 'fa-eye-slash');
             } else {
-                passInput.type = "password"; eyeIcon.classList.replace('fa-eye-slash', 'fa-eye');
+                passInput.type = "password";
+                eyeIcon.classList.replace('fa-eye-slash', 'fa-eye');
             }
         };
 
+        // RESET PASSWORD BUTTON (TELEGRAM AUTO MESSAGE)
+        window.forgotPassword = () => {
+            const mobile = document.getElementById("loginMobile").value.trim();
+
+            let message = "Hello SunPower Help, I want to reset my password.";
+
+            if (mobile.length === 10) {
+                message = `Hello SunPower Help, I want to reset my password.\n\nMy Registered Mobile Number: +91${mobile}`;
+            }
+
+            const telegramLink = `https://t.me/SunPowerHelp?text=${encodeURIComponent(message)}`;
+
+            window.open(telegramLink, "_blank");
+        };
+
+        // CUSTOM ALERT POPUP
         window.showAlert = (msg, type = 'info', redirect = null) => {
             const modal = document.getElementById('customAlert');
             const icon = document.getElementById('alertIcon');
@@ -124,12 +143,19 @@
             document.getElementById('alertMsg').innerText = msg;
             
             if(type === 'success') { 
-                icon.innerHTML = '<i class="fas fa-check-double text-emerald-500"></i>'; icon.style.background = '#ecfdf5'; title.innerText = "Authorized"; 
+                icon.innerHTML = '<i class="fas fa-check-double text-emerald-500"></i>';
+                icon.style.background = '#ecfdf5';
+                title.innerText = "Authorized"; 
             } else if(type === 'error') { 
-                icon.innerHTML = '<i class="fas fa-fingerprint text-rose-500"></i>'; icon.style.background = '#fff1f2'; title.innerText = "Access Denied"; 
+                icon.innerHTML = '<i class="fas fa-fingerprint text-rose-500"></i>';
+                icon.style.background = '#fff1f2';
+                title.innerText = "Access Denied"; 
             } else {
-                icon.innerHTML = '<i class="fas fa-info-circle text-blue-500"></i>'; icon.style.background = '#eff6ff'; title.innerText = "Security Check";
+                icon.innerHTML = '<i class="fas fa-info-circle text-blue-500"></i>';
+                icon.style.background = '#eff6ff';
+                title.innerText = "Security Check";
             }
+
             modal.classList.add('modal-active');
         };
 
@@ -138,6 +164,7 @@
             if(redirectUrl) window.location.href = redirectUrl;
         };
 
+        // LOGIN FORM
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
@@ -152,6 +179,7 @@
 
             try {
                 const userSnap = await getDoc(doc(db, "users", mobile));
+
                 if (userSnap.exists()) {
                     if (userSnap.data().password === pass) {
                         localStorage.setItem('userMobile', mobile);
@@ -161,7 +189,6 @@
                         showAlert("Incorrect password!", "error"); 
                     }
                 } else { 
-                    // JR USER NASAL TR AUTO REDIRECT TO REGISTER
                     showAlert("Account not found. Please register first.", "info", "register.html");
                     setTimeout(() => { window.location.href = "register.html"; }, 3000);
                 }
