@@ -11,8 +11,6 @@
         @keyframes fadeIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
         input::-webkit-outer-spin-button,
         input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-        
-        /* Custom Checkbox Style */
         .custom-checkbox { width: 18px; height: 18px; cursor: pointer; accent-color: #2563eb; }
     </style>
 </head>
@@ -87,7 +85,7 @@
         import { getFirestore, doc, getDoc, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         const firebaseConfig = {
-            apiKey: "AIzaSyA3k5ByUuJ-1jtVovgZMxsw1LBaBkn_nDo",
+            apiKey: "AIzaSyA3k5ByUuJ-1jtVovgZMsw1LBaBkn_nDo",
             authDomain: "new-investment-web.firebaseapp.com",
             projectId: "new-investment-web",
             storageBucket: "new-investment-web.firebasestorage.app",
@@ -134,7 +132,6 @@
         window.closeAlert = () => { document.getElementById('customAlert').classList.remove('modal-active'); };
 
         document.getElementById('registerBtn').onclick = async () => {
-            // १. चेकबॉक्स व्हॅलिडेशन
             const isTermsAccepted = document.getElementById('regTerms').checked;
             if(!isTermsAccepted) {
                 showAlert("Please check the Terms & Conditions to proceed!", "info");
@@ -157,10 +154,12 @@
                     return;
                 }
 
+                // *** बदललेला भाग: totalDeposit फील्ड ॲड केले आहे ***
                 await setDoc(userRef, {
                     mobile: mobile,
                     password: pass,
                     balance: 0,
+                    totalDeposit: 0, // नवीन युजरसाठी ऑटोमॅटिक ० सेट होईल
                     invitedBy: referBy,
                     regDate: Date.now()
                 });
