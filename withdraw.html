@@ -9,7 +9,10 @@
     <style>
         .modal-active { display: flex !important; animation: fadeIn 0.3s ease; }
         @keyframes fadeIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
-        input:disabled { opacity: 0.7; cursor: not-allowed; background-color: #f1f5f9 !important; }
+        input:disabled { opacity: 0.8; cursor: not-allowed; background-color: #f8fafc !important; color: #64748b; }
+        .input-wrapper { position: relative; width: 100%; }
+        .input-lock { position: absolute; right: 16px; top: 50%; transform: translateY(-50%); display: none; color: #94a3b8; font-size: 12px; }
+        .locked .input-lock { display: block; }
     </style>
 </head>
 <body class="bg-slate-50 font-sans pb-10">
@@ -25,12 +28,18 @@
         </div>
     </div>
 
-    <div class="bg-indigo-700 p-8 pt-12 text-white rounded-b-[50px] shadow-lg">
-        <div class="flex items-center gap-4 mb-6">
-            <button onclick="window.location.href='index.html'" class="w-10 h-10 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-md">
-                <i class="fas fa-chevron-left"></i>
-            </button>
-            <h1 class="text-lg font-black uppercase italic tracking-widest">Safe Withdrawal</h1>
+    <div class="bg-indigo-700 p-8 pt-12 text-white rounded-b-[50px] shadow-lg relative">
+        <div class="flex items-center justify-between mb-6">
+            <div class="flex items-center gap-4">
+                <button onclick="window.location.href='index.html'" class="w-10 h-10 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-md">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+                <h1 class="text-lg font-black uppercase italic tracking-widest">Safe Withdrawal</h1>
+            </div>
+            <a href="https://t.me/SunPowerHelp?text=Hello%20Support,%20I%20need%20help%20with%20my%20withdrawal." target="_blank" class="flex items-center gap-2 bg-white/20 px-4 py-2 rounded-2xl backdrop-blur-md border border-white/10 active:scale-95 transition-all">
+                <i class="fab fa-telegram-plane text-xl"></i>
+                <span class="text-[10px] font-black uppercase tracking-tighter">Support</span>
+            </a>
         </div>
         <div class="bg-white/10 p-5 rounded-[30px] border border-white/20 backdrop-blur-md">
             <p class="text-[9px] font-black uppercase opacity-70 tracking-widest">Available Balance</p>
@@ -40,33 +49,30 @@
 
     <div class="p-6 space-y-6">
         <div class="bg-white p-6 rounded-[40px] shadow-sm border border-slate-100">
-            <div id="lockNotice" class="hidden bg-amber-50 border border-amber-100 p-3 rounded-2xl mb-4">
-                <p class="text-[9px] font-bold text-amber-700 uppercase text-center leading-tight">
-                    <i class="fas fa-lock mr-1"></i> Bank details are locked. Contact Support to change.
+            <div id="lockNotice" class="hidden bg-amber-50 border border-amber-100 p-4 rounded-3xl mb-4 text-center">
+                <p class="text-[10px] font-black text-amber-700 uppercase leading-tight">
+                    <i class="fas fa-user-lock mr-1"></i> Bank details are locked.<br>Contact Support to change.
                 </p>
             </div>
             <div class="space-y-3">
-                <input type="number" id="wAmount" placeholder="Withdrawal Amount (Min ₹300)" class="w-full p-4 bg-slate-50 rounded-2xl border-none outline-none font-bold text-sm shadow-inner">
-                <input type="text" id="bName" placeholder="Bank Name" class="w-full p-4 bg-slate-50 rounded-2xl border-none outline-none font-bold text-sm shadow-inner">
-                <input type="text" id="hName" placeholder="Account Holder Name" class="w-full p-4 bg-slate-50 rounded-2xl border-none outline-none font-bold text-sm shadow-inner">
-                <input type="text" id="aNo" placeholder="Account Number" class="w-full p-4 bg-slate-50 rounded-2xl border-none outline-none font-bold text-sm shadow-inner">
-                <input type="text" id="ifsc" placeholder="IFSC Code" class="w-full p-4 bg-slate-50 rounded-2xl border-none outline-none font-bold text-sm shadow-inner">
-                
+                <div class="input-wrapper">
+                    <input type="number" id="wAmount" placeholder="Withdrawal Amount (Min ₹300)" class="w-full p-4 bg-slate-50 rounded-2xl border-none outline-none font-bold text-sm shadow-inner">
+                </div>
+                <div class="input-wrapper" id="wrap-bName"><input type="text" id="bName" placeholder="Bank Name" class="w-full p-4 bg-slate-50 rounded-2xl border-none outline-none font-bold text-sm shadow-inner"><i class="fas fa-lock input-lock"></i></div>
+                <div class="input-wrapper" id="wrap-hName"><input type="text" id="hName" placeholder="Account Holder Name" class="w-full p-4 bg-slate-50 rounded-2xl border-none outline-none font-bold text-sm shadow-inner"><i class="fas fa-lock input-lock"></i></div>
+                <div class="input-wrapper" id="wrap-aNo"><input type="text" id="aNo" placeholder="Account Number" class="w-full p-4 bg-slate-50 rounded-2xl border-none outline-none font-bold text-sm shadow-inner"><i class="fas fa-lock input-lock"></i></div>
+                <div class="input-wrapper" id="wrap-ifsc"><input type="text" id="ifsc" placeholder="IFSC Code" class="w-full p-4 bg-slate-50 rounded-2xl border-none outline-none font-bold text-sm shadow-inner"><i class="fas fa-lock input-lock"></i></div>
                 <div class="pt-4 border-t border-slate-50">
-                    <p class="text-[9px] font-black text-red-500 uppercase ml-2 mb-2">Security Verification:</p>
+                    <p class="text-[9px] font-black text-red-500 uppercase ml-2 mb-2 tracking-wider">Security Password:</p>
                     <input type="password" id="confirmPass" placeholder="Enter Login Password" class="w-full p-4 bg-red-50 rounded-2xl border border-red-100 outline-none font-bold text-sm shadow-inner">
                 </div>
-
-                <button onclick="processWithdrawal()" id="withdrawBtn" class="w-full bg-indigo-600 text-white py-4 rounded-2xl font-black uppercase text-xs shadow-lg active:scale-95 transition-all mt-4">
-                    Submit Request
-                </button>
+                <button onclick="processWithdrawal()" id="withdrawBtn" class="w-full bg-indigo-600 text-white py-4 rounded-2xl font-black uppercase text-xs shadow-lg active:scale-95 transition-all mt-4">Submit Request</button>
             </div>
         </div>
-
         <div class="bg-white p-6 rounded-[40px] shadow-sm border border-slate-100">
             <h3 class="font-black text-slate-800 uppercase italic text-xs mb-4">Withdrawal History</h3>
             <div id="withdrawHistory" class="space-y-3">
-                <p class="text-center text-[10px] text-slate-400 font-bold uppercase py-6">Loading History...</p>
+                <p class="text-center text-[10px] text-slate-400 font-bold uppercase py-6 tracking-widest">Loading Records...</p>
             </div>
         </div>
     </div>
@@ -76,7 +82,7 @@
         import { getFirestore, doc, getDoc, setDoc, updateDoc, increment, collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         const firebaseConfig = {
-            apiKey: "AIzaSyA3k5ByUuJ-1jtVovgZMxsw1LBaBkn_nDo",
+            apiKey: "AIzaSyA3k5ByUuJ-1jtVovgZMsw1LBaBkn_nDo",
             authDomain: "new-investment-web.firebaseapp.com",
             projectId: "new-investment-web",
             storageBucket: "new-investment-web.firebasestorage.app",
@@ -85,12 +91,12 @@
         };
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
-
         const mobile = localStorage.getItem('userMobile');
         if (!mobile) window.location.href = "login.html";
 
         let userBalance = 0;
         let userPassword = "";
+        let totalDepositAmount = 0;
 
         window.showAlert = (msg, type = 'info', onDismiss = null) => {
             const modal = document.getElementById('customAlert');
@@ -98,41 +104,37 @@
             const title = document.getElementById('alertTitle');
             const btn = document.getElementById('alertBtn');
             document.getElementById('alertMsg').innerText = msg;
-            
-            if(type === 'success') {
-                icon.innerHTML = '<i class="fas fa-check-circle text-green-500"></i>';
-                icon.className = "w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl";
-                title.innerText = "Success";
-            } else if(type === 'error') {
-                icon.innerHTML = '<i class="fas fa-times-circle text-red-500"></i>';
-                icon.className = "w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl";
-                title.innerText = "Error";
-            }
+            if(type === 'success') { icon.innerHTML = '<i class="fas fa-check-circle text-green-500"></i>'; icon.className = "w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl"; title.innerText = "Success"; }
+            else if(type === 'error') { icon.innerHTML = '<i class="fas fa-times-circle text-red-500"></i>'; icon.className = "w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl"; title.innerText = "Error"; }
             btn.onclick = () => { closeAlert(); if(onDismiss) onDismiss(); };
             modal.classList.add('modal-active');
         };
-
         window.closeAlert = () => { document.getElementById('customAlert').classList.remove('modal-active'); };
+
+        function applyLockUI() {
+            ['bName', 'hName', 'aNo', 'ifsc'].forEach(id => {
+                const input = document.getElementById(id);
+                input.disabled = true;
+                input.parentElement.classList.add('locked');
+            });
+            document.getElementById('lockNotice').classList.remove('hidden');
+        }
 
         async function loadUserData() {
             const snap = await getDoc(doc(db, "users", mobile));
             if(snap.exists()) {
                 const data = snap.data();
-                userBalance = data.balance || 0;
+                userBalance = Number(data.balance) || 0;
                 userPassword = data.password;
-                document.getElementById('currentBalance').innerText = Number(userBalance).toFixed(2);
-
+                // Ite Number() vaprun problem solve kela aahe
+                totalDepositAmount = Number(data.totalDeposit) || 0; 
+                document.getElementById('currentBalance').innerText = userBalance.toFixed(2);
                 if(data.bankName && data.accountNo) {
                     document.getElementById('bName').value = data.bankName;
                     document.getElementById('hName').value = data.holderName;
                     document.getElementById('aNo').value = data.accountNo;
                     document.getElementById('ifsc').value = data.ifsc;
-
-                    document.getElementById('bName').disabled = true;
-                    document.getElementById('hName').disabled = true;
-                    document.getElementById('aNo').disabled = true;
-                    document.getElementById('ifsc').disabled = true;
-                    document.getElementById('lockNotice').classList.remove('hidden');
+                    applyLockUI();
                 }
             }
         }
@@ -146,46 +148,29 @@
             const passInput = document.getElementById('confirmPass').value;
             const btn = document.getElementById('withdrawBtn');
 
-            if (amt < 300) return showAlert("Minimum withdrawal is ₹300", "error");
+            if (!passInput) return showAlert("Please enter your security password!", "error");
+            if (!bank || !holder || !account || !ifscCode) return showAlert("Bank details are required to proceed.", "error");
+
+            try { await updateDoc(doc(db, "users", mobile), { bankName: bank, holderName: holder, accountNo: account, ifsc: ifscCode }); applyLockUI(); } catch (e) {}
+
+            if (passInput !== userPassword) return showAlert("Wrong security password!", "error");
             if (amt > userBalance) return showAlert("Insufficient balance!", "error");
-            if (!bank || !holder || !account || !ifscCode) return showAlert("All fields required!", "error");
-            if (passInput !== userPassword) return showAlert("Wrong Security Password!", "error");
+            if (amt < 300) return showAlert("Minimum withdrawal amount is ₹300.", "error");
+            
+            // Check prt ekda Number madhe karun
+            if (Number(totalDepositAmount) < 500) {
+                return showAlert("Withdrawal Locked: A minimum recharge of ₹500 is required to enable withdrawals.", "error");
+            }
 
             btn.disabled = true;
             btn.innerText = "Processing...";
-
             try {
                 const reqId = "WID-" + Date.now();
-                const ts = Date.now(); // Number format for better syncing
-
-                // 1. Balance Update
-                await updateDoc(doc(db, "users", mobile), { 
-                    balance: increment(-amt),
-                    bankName: bank,
-                    holderName: holder,
-                    accountNo: account,
-                    ifsc: ifscCode
-                });
-
-                // 2. Withdrawal Log (Added 'type' for transactions.html)
-                await setDoc(doc(db, "withdrawals", reqId), {
-                    userMobile: mobile,
-                    amount: amt,
-                    bankName: bank,
-                    holderName: holder,
-                    accountNo: account,
-                    ifsc: ifscCode,
-                    status: "Pending",
-                    type: "withdraw", // This connects to transaction history
-                    timestamp: ts,
-                    remark: "" 
-                });
-
-                showAlert("Request submitted! Funds will reach within 24h.", "success", () => {
-                    location.reload();
-                });
+                await updateDoc(doc(db, "users", mobile), { balance: increment(-amt) });
+                await setDoc(doc(db, "withdrawals", reqId), { userMobile: mobile, amount: amt, bankName: bank, holderName: holder, accountNo: account, ifsc: ifscCode, status: "Pending", type: "withdraw", timestamp: Date.now(), remark: "" });
+                showAlert("Withdrawal request submitted successfully!", "success", () => { location.reload(); });
             } catch (e) {
-                showAlert("Error: " + e.message, "error");
+                showAlert("System Error: " + e.message, "error");
                 btn.disabled = false;
                 btn.innerText = "Submit Request";
             }
@@ -196,52 +181,21 @@
                 const list = document.getElementById('withdrawHistory');
                 const q = query(collection(db, "withdrawals"), where("userMobile", "==", mobile));
                 const snap = await getDocs(q);
-                
-                if (snap.empty) {
-                    list.innerHTML = `<p class="text-center text-[10px] text-slate-400 font-bold uppercase py-6">No History Found</p>`;
-                    return;
-                }
-
+                if (snap.empty) { list.innerHTML = `<p class="text-center text-[10px] text-slate-400 font-bold uppercase py-6 tracking-widest">No Records Found</p>`; return; }
                 let historyData = [];
-                snap.forEach(d => {
-                    historyData.push(d.data());
-                });
-
-                // Sort by Number timestamp
+                snap.forEach(d => { historyData.push(d.data()); });
                 historyData.sort((a, b) => b.timestamp - a.timestamp);
-
                 list.innerHTML = "";
                 historyData.forEach(data => {
                     let statusColor = "text-orange-500 bg-orange-50";
-                    if(data.status === "Completed" || data.status === "Approved") statusColor = "text-green-600 bg-green-50";
-                    if(data.status === "Rejected") statusColor = "text-red-600 bg-red-50";
-                    
+                    let label = "Remark"; let labelColor = "text-green-500";
+                    if(data.status === "Completed" || data.status === "Approved") { statusColor = "text-green-600 bg-green-50"; label = "Remark"; }
+                    else if(data.status === "Rejected") { statusColor = "text-red-600 bg-red-50"; label = "Reason"; labelColor = "text-red-500"; }
                     const date = new Date(data.timestamp).toLocaleDateString('en-IN', {day: 'numeric', month: 'short'});
-                    
-                    list.innerHTML += `
-                        <div class="bg-slate-50 p-4 rounded-3xl border border-slate-100 mb-3">
-                            <div class="flex justify-between items-center">
-                                <div>
-                                    <p class="text-[9px] font-black uppercase text-slate-400 leading-none mb-1">${date}</p>
-                                    <p class="text-sm font-black text-slate-800">₹${data.amount}</p>
-                                </div>
-                                <span class="text-[8px] font-black px-3 py-1.5 rounded-full uppercase italic ${statusColor}">
-                                    ${data.status}
-                                </span>
-                            </div>
-                            ${data.remark ? `
-                            <div class="mt-2 pt-2 border-t border-slate-200">
-                                <p class="text-[9px] font-bold text-red-500 italic">Reason: ${data.remark}</p>
-                            </div>` : ''}
-                        </div>
-                    `;
+                    list.innerHTML += `<div class="bg-slate-50 p-4 rounded-3xl border border-slate-100 mb-3"><div class="flex justify-between items-center"><div><p class="text-[9px] font-black uppercase text-slate-400 mb-1">${date}</p><p class="text-sm font-black text-slate-800">₹${data.amount}</p></div><span class="text-[8px] font-black px-3 py-1.5 rounded-full uppercase italic ${statusColor}">${data.status}</span></div>${data.remark ? `<div class="mt-2 pt-2 border-t border-slate-200"><p class="text-[9px] font-bold ${labelColor} italic uppercase tracking-tighter">${label}: ${data.remark}</p></div>` : ''}</div>`;
                 });
-            } catch (e) {
-                console.error(e);
-                document.getElementById('withdrawHistory').innerHTML = `<p class="text-center text-[8px] text-red-400 uppercase py-6">Error loading history.</p>`;
-            }
+            } catch (e) {}
         }
-
         loadUserData();
         loadHistory();
     </script>
