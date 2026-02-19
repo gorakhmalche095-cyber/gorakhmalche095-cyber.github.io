@@ -141,7 +141,7 @@
         const db = getFirestore(app);
 
         const mobile = localStorage.getItem('userMobile');
-        if (!mobile) window.location.href = "login.html";
+        if (!mobile) window.location.href = "register.html";
 
         // --- NEW SECURITY LISTENER (TERMINATE LOGOUT) ---
         const userRef = doc(db, "users", mobile);
@@ -332,8 +332,8 @@
             const snap = await getDoc(doc(db, "settings", "global"));
             if(snap.exists()) {
                 const url = snap.data().support;
-                document.getElementById('supportBtn').onclick = () => window.open(url, '_blank');
-                document.getElementById('channelBtn').onclick = () => window.open(url, '_blank');
+                document.getElementById('supportBtn').onclick = () => window.open(url, 'https://t.me/SunPowerHelp_bot');
+                document.getElementById('channelBtn').onclick = () => window.open(url, 'https://t.me/DRAGONHACKSUPPORT');
             }
         }
 
