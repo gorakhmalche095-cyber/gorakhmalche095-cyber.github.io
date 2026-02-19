@@ -154,14 +154,15 @@
                     return;
                 }
 
-                // *** बदललेला भाग: totalDeposit फील्ड ॲड केले आहे ***
+                // *** पूर्णपणे अपडेटेड डेटा सेट ***
                 await setDoc(userRef, {
                     mobile: mobile,
                     password: pass,
                     balance: 0,
-                    totalDeposit: 0, // नवीन युजरसाठी ऑटोमॅटिक ० सेट होईल
+                    totalDeposit: 0,
                     invitedBy: referBy,
-                    regDate: Date.now()
+                    registrationDate: new Date().toISOString(), // ॲडमिन सॉर्टिंगसाठी
+                    regDate: Date.now() // बॅकअपसाठी
                 });
 
                 if (referBy && referBy !== mobile) {
