@@ -22,7 +22,7 @@
             <div id="alertIcon" class="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl">
                 <i class="fas fa-info-circle"></i>
             </div>
-            <h3 id="alertTitle" class="font-black text-slate-800 uppercase italic text-sm mb-2">Notice</h3>
+            <h3 id="alertTitle" class="font-black text-slate-800 uppercase  text-sm mb-2">Notice</h3>
             <p id="alertMsg" class="text-xs font-bold text-slate-500 leading-relaxed mb-6"></p>
             <button id="alertBtn" onclick="closeAlert()" class="w-full bg-indigo-600 text-white py-4 rounded-2xl font-black uppercase text-[10px] tracking-widest shadow-lg active:scale-95 transition-all">Dismiss</button>
         </div>
@@ -34,7 +34,7 @@
                 <button onclick="window.location.href='index.html'" class="w-10 h-10 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-md">
                     <i class="fas fa-chevron-left"></i>
                 </button>
-                <h1 class="text-lg font-black uppercase italic tracking-widest">Safe Withdrawal</h1>
+                <h1 class="text-lg font-black uppercase  tracking-widest">Safe Withdrawal</h1>
             </div>
             <a href="https://t.me/SunPowerHelp_bot?text=Hello%20Support,%20I%20need%20help%20with%20my%20withdrawal." target="_blank" class="flex items-center gap-2 bg-white/20 px-4 py-2 rounded-2xl backdrop-blur-md border border-white/10 active:scale-95 transition-all">
                 <i class="fab fa-telegram-plane text-xl"></i>
@@ -70,7 +70,7 @@
             </div>
         </div>
         <div class="bg-white p-6 rounded-[40px] shadow-sm border border-slate-100">
-            <h3 class="font-black text-slate-800 uppercase italic text-xs mb-4">Withdrawal History</h3>
+            <h3 class="font-black text-slate-800 uppercase  text-xs mb-4">Withdrawal History</h3>
             <div id="withdrawHistory" class="space-y-3">
                 <p class="text-center text-[10px] text-slate-400 font-bold uppercase py-6 tracking-widest">Loading Records...</p>
             </div>
@@ -192,7 +192,7 @@
                     if(data.status === "Completed" || data.status === "Approved") { statusColor = "text-green-600 bg-green-50"; label = "Remark"; }
                     else if(data.status === "Rejected") { statusColor = "text-red-600 bg-red-50"; label = "Reason"; labelColor = "text-red-500"; }
                     const date = new Date(data.timestamp).toLocaleDateString('en-IN', {day: 'numeric', month: 'short'});
-                    list.innerHTML += `<div class="bg-slate-50 p-4 rounded-3xl border border-slate-100 mb-3"><div class="flex justify-between items-center"><div><p class="text-[9px] font-black uppercase text-slate-400 mb-1">${date}</p><p class="text-sm font-black text-slate-800">₹${data.amount}</p></div><span class="text-[8px] font-black px-3 py-1.5 rounded-full uppercase italic ${statusColor}">${data.status}</span></div>${data.remark ? `<div class="mt-2 pt-2 border-t border-slate-200"><p class="text-[9px] font-bold ${labelColor} italic uppercase tracking-tighter">${label}: ${data.remark}</p></div>` : ''}</div>`;
+                    list.innerHTML += `<div class="bg-slate-50 p-4 rounded-3xl border border-slate-100 mb-3"><div class="flex justify-between items-center"><div><p class="text-[9px] font-black uppercase text-slate-400 mb-1">${date}</p><p class="text-sm font-black text-slate-800">₹${data.amount}</p></div><span class="text-[8px] font-black px-3 py-1.5 rounded-full uppercase  ${statusColor}">${data.status}</span></div>${data.remark ? `<div class="mt-2 pt-2 border-t border-slate-200"><p class="text-[9px] font-bold ${labelColor}  uppercase tracking-tighter">${label}: ${data.remark}</p></div>` : ''}</div>`;
                 });
             } catch (e) {}
         }
