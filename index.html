@@ -14,7 +14,30 @@
     </style>
 </head>
 <body class="bg-slate-50 pb-24 font-sans">
-
+    <div id="announcementPopup" class="fixed inset-0 z-[9999] hidden flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+    <div class="bg-white w-full max-w-sm rounded-[40px] overflow-hidden shadow-2xl relative border border-white/20">
+        <div class="bg-gradient-to-b from-indigo-500 to-blue-700 p-8 text-center relative">
+            <button onclick="closePopup()" class="absolute top-4 right-4 text-slate-800 bg-white/40 hover:bg-white rounded-full w-8 h-8 flex items-center justify-center">
+                <i class="fas fa-times"></i>
+            </button>
+            <img src="https://cdn-icons-png.flaticon.com/512/3601/3601633.png" class="w-20 mx-auto drop-shadow-lg" alt="Profit">
+            <h2 class="text-2xl font-black text-slate-900 mt-3 uppercase tracking-tighter ">Profit System</h2>
+        </div>
+        <div class="p-8">
+            <div class="space-y-4 text-slate-700 text-sm leading-relaxed font-bold">
+                <p>●We deposit your funds into trading platforms to generate consistent profits for you.</p>
+                <p>●With Our <span class="text-indigo-600 text-lg">80%</span> profit success rate, we ensure you receive your payments along with profits on time.</p>
+                </p>●Please note that occasional losses can occur, so ensure you invest at your own risk.
+                <p class="text-[10px] text-black-500 font-black uppercase  border-t border-slate-100 pt-4 tracking-tighter">
+                    ●Disclaimer: Even though there is no risk, all investments are at your own responsibility.
+                </p>
+            </div>
+            <button onclick="closePopup()" class="w-full bg-indigo-600 text-white font-black py-4 rounded-[24px] mt-6 shadow-xl shadow-indigo-100 uppercase text-xs tracking-widest active:scale-95 transition-all">
+                Understood
+            </button>
+        </div>
+    </div>
+</div>
     <div id="customAlert" class="fixed inset-0 bg-black/60 z-[200] hidden items-center justify-center p-6 backdrop-blur-sm">
         <div class="bg-white w-full max-w-xs rounded-[40px] p-8 text-center shadow-2xl">
             <div id="alertIcon" class="w-16 h-16 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl">
@@ -90,13 +113,14 @@
             <i class="fab fa-telegram text-blue-500 text-lg"></i>
             <p class="text-[8px] font-black uppercase text-slate-500 mt-1">Channel</p>
         </div>
-        <a href="https://www.dropbox.com/scl/fi/dfkrilpvfgquw7joom6v0/Sun-Power-Invest.apk?rlkey=pc9mw9qrq524821vhmz0fnrt4&raw=1" 
-   download="SunPower.apk"
-   type="application/vnd.android.package-archive"
+        <a href="https://www.dropbox.com/scl/fi/dfkrilpvfgquw7joom6v0/Sun-Power-Invest.apk?rlkey=pc9mw9qrq524821vhmz0fnrt4&st=9077evvh&dl=1" 
+   target="_blank" 
+   rel="noopener noreferrer"
    class="bg-white p-3 rounded-2xl text-center shadow-sm border border-slate-100 cursor-pointer block">
     <i class="fas fa-download text-green-600 text-lg"></i>
-    <p class="text-[8px] font-black uppercase text-slate-500 mt-1">Instal App</p>
-        </a>
+    <p class="text-[8px] font-black uppercase text-slate-500 mt-1">App</p>
+</a>
+
         <div id="supportBtn" class="bg-white p-3 rounded-2xl text-center shadow-sm border border-slate-100 cursor-pointer">
             <i class="fas fa-headset text-pink-500 text-lg"></i>
             <p class="text-[8px] font-black uppercase text-slate-500 mt-1">Support</p>
@@ -336,7 +360,15 @@
                 }
             });
         };
-
+document.addEventListener("DOMContentLoaded", function() {
+    if (!sessionStorage.getItem("popupShown")) {
+        document.getElementById("announcementPopup").classList.remove("hidden");
+    }
+});
+window.closePopup = () => {
+    document.getElementById("announcementPopup").classList.add("hidden");
+    sessionStorage.setItem("popupShown", "true");
+};
         async function setupSupport() {
             const snap = await getDoc(doc(db, "settings", "global"));
             if(snap.exists()) {
@@ -345,7 +377,6 @@
                 document.getElementById('channelBtn').onclick = () => window.open(url, 'https://t.me/DRAGONHACKSUPPORT');
             }
         }
-
         fetchUser(); fetchNotifications(); fetchPlans(); setupSupport();
     </script>
 </body>
