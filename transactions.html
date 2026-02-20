@@ -18,21 +18,21 @@
         <button onclick="window.location.href='./mine.html'" class="absolute left-6 top-8 bg-white/20 w-10 h-10 rounded-full flex items-center justify-center active:scale-90 transition-all">
             <i class="fas fa-arrow-left text-sm"></i>
         </button>
-        <h1 class="text-xl font-black uppercase italic tracking-tighter">Transaction Log</h1>
+        <h1 class="text-xl font-black uppercase tracking-tighter">Transaction Log</h1>
         <p class="text-[10px] font-bold opacity-80 uppercase mt-1">Your Passbook Details</p>
     </div>
 
     <div class="flex gap-2 p-6 overflow-x-auto no-scrollbar">
-        <button id="btn-all" onclick="filterTrans('all')" class="tab-active flex-shrink-0 px-6 py-2.5 rounded-2xl bg-white text-slate-400 text-[10px] font-black uppercase italic shadow-sm border border-slate-100 transition-all">All</button>
-        <button id="btn-recharge" onclick="filterTrans('recharge')" class="flex-shrink-0 px-6 py-2.5 rounded-2xl bg-white text-slate-400 text-[10px] font-black uppercase italic shadow-sm border border-slate-100 transition-all">Recharge</button>
-        <button id="btn-withdraw" onclick="filterTrans('withdraw')" class="flex-shrink-0 px-6 py-2.5 rounded-2xl bg-white text-slate-400 text-[10px] font-black uppercase italic shadow-sm border border-slate-100 transition-all">Withdraw</button>
-        <button id="btn-income" onclick="filterTrans('income')" class="flex-shrink-0 px-6 py-2.5 rounded-2xl bg-white text-slate-400 text-[10px] font-black uppercase italic shadow-sm border border-slate-100 transition-all">Income</button>
+        <button id="btn-all" onclick="filterTrans('all')" class="tab-active flex-shrink-0 px-6 py-2.5 rounded-2xl bg-white text-slate-400 text-[10px] font-black uppercase  shadow-sm border border-slate-100 transition-all">All</button>
+        <button id="btn-recharge" onclick="filterTrans('recharge')" class="flex-shrink-0 px-6 py-2.5 rounded-2xl bg-white text-slate-400 text-[10px] font-black uppercase  shadow-sm border border-slate-100 transition-all">Recharge</button>
+        <button id="btn-withdraw" onclick="filterTrans('withdraw')" class="flex-shrink-0 px-6 py-2.5 rounded-2xl bg-white text-slate-400 text-[10px] font-black uppercase  shadow-sm border border-slate-100 transition-all">Withdraw</button>
+        <button id="btn-income" onclick="filterTrans('income')" class="flex-shrink-0 px-6 py-2.5 rounded-2xl bg-white text-slate-400 text-[10px] font-black uppercase  shadow-sm border border-slate-100 transition-all">Income</button>
     </div>
 
     <div id="masterHistory" class="px-6 space-y-4">
         <div class="text-center py-20">
             <i class="fas fa-circle-notch fa-spin text-blue-600 text-2xl mb-4"></i>
-            <p class="text-slate-300 font-bold uppercase italic text-[10px]">Syncing with Database...</p>
+            <p class="text-slate-300 font-bold uppercase  text-[10px]">Syncing with Database...</p>
         </div>
     </div>
 
@@ -96,7 +96,7 @@
         window.renderUI = (data) => {
             const container = document.getElementById('masterHistory');
             if(data.length === 0) {
-                container.innerHTML = `<div class="text-center py-20 opacity-30 font-black italic uppercase text-xs">No Records Found</div>`;
+                container.innerHTML = `<div class="text-center py-20 opacity-30 font-black  uppercase text-xs">No Records Found</div>`;
                 return;
             }
 
@@ -116,16 +116,16 @@
                                 <i class="fas fa-${item.icon}"></i>
                             </div>
                             <div>
-                                <h4 class="text-[11px] font-black text-slate-800 italic uppercase">${item.type}</h4>
+                                <h4 class="text-[11px] font-black text-slate-800  uppercase">${item.type}</h4>
                                 <p class="text-[8px] font-bold text-slate-400 uppercase mt-0.5">${date} | ${time}</p>
-                                ${item.remark ? `<p class="text-[9px] text-slate-500 italic mt-1 font-medium leading-tight border-t border-slate-50 pt-1">${item.remark}</p>` : ''}
+                                ${item.remark ? `<p class="text-[9px] text-slate-500  mt-1 font-medium leading-tight border-t border-slate-50 pt-1">${item.remark}</p>` : ''}
                             </div>
                         </div>
                         <div class="text-right">
-                            <p class="text-sm font-black ${isDebit ? 'text-red-600' : 'text-green-600'} italic">
+                            <p class="text-sm font-black ${isDebit ? 'text-red-600' : 'text-green-600'} ">
                                 ${isDebit ? '-' : '+'}₹${item.amount}
                             </p>
-                            <span class="text-[7px] font-black uppercase italic ${statusColor}">${item.status || 'Success'}</span>
+                            <span class="text-[7px] font-black uppercase  ${statusColor}">${item.status || 'Success'}</span>
                         </div>
                     </div>`;
             });
