@@ -67,7 +67,7 @@
     <div class="bg-gradient-to-br from-indigo-800 to-blue-600 p-8 pt-12 text-white rounded-b-[55px] shadow-2xl relative overflow-hidden">
         <div class="flex justify-between items-center mb-6 relative z-10">
             <div>
-                <h1 class="text-3xl font-black italic tracking-tighter uppercase text-yellow-400">SunPower</h1>
+                <h1 class="text-3xl font-black tracking-tighter uppercase text-yellow-400">SunPower</h1>
                 <p class="text-[9px] font-bold opacity-70 tracking-widest uppercase">Solar Innovation Hub</p>
             </div>
             <button onclick="toggleNotif()" class="relative bg-white/20 w-12 h-12 rounded-2xl flex items-center justify-center backdrop-blur-md border border-white/20 active:scale-90 transition-all">
@@ -83,12 +83,12 @@
                     <h2 class="text-4xl font-black mt-1">₹<span id="userBalance">0.00</span></h2>
                 </div>
                 <div class="bg-green-500/20 border border-green-400/30 px-3 py-1 rounded-full">
-                    <p class="text-[8px] font-black text-green-300 uppercase tracking-tighter italic">Daily Withdrawal</p>
+                    <p class="text-[8px] font-black text-green-300 uppercase tracking-tighter ">Daily Withdrawal</p>
                 </div>
             </div>
             <div class="grid grid-cols-2 gap-4 mt-6 border-t border-white/10 pt-4 text-[10px] font-bold opacity-80 uppercase tracking-tighter">
                 <p>Min Withdraw: ₹200</p>
-                <p class="text-right text-yellow-400 italic">Withdrawal: Anytime 24/7</p>
+                <p class="text-right text-yellow-400 ">Withdrawal: Anytime 24/7</p>
             </div>
             <div class="flex gap-3 mt-6">
                 <button onclick="window.location.href='recharge.html'" class="flex-1 bg-yellow-400 text-indigo-900 py-4 rounded-2xl font-black uppercase text-xs shadow-lg active:scale-95 transition-all">Recharge</button>
@@ -118,7 +118,7 @@
    rel="noopener noreferrer"
    class="bg-white p-3 rounded-2xl text-center shadow-sm border border-slate-100 cursor-pointer block">
     <i class="fas fa-download text-green-600 text-lg"></i>
-    <p class="text-[8px] font-black uppercase text-slate-500 mt-1">App</p>
+    <p class="text-[8px] font-black uppercase text-slate-500 mt-1">Install App</p>
 </a>
 
         <div id="supportBtn" class="bg-white p-3 rounded-2xl text-center shadow-sm border border-slate-100 cursor-pointer">
@@ -130,14 +130,14 @@
     </div>
 
     <div class="px-6 mb-8">
-        <h3 class="font-black text-slate-800 uppercase italic tracking-tighter mb-4 flex items-center">
+        <h3 class="font-black text-slate-800 uppercase  tracking-tighter mb-4 flex items-center">
             <i class="fas fa-bolt text-yellow-500 mr-2"></i> Investment Plans
         </h3>
         <div id="plansContainer" class="space-y-4"></div>
     </div>
 
     <div class="px-6 pb-10">
-        <h3 class="font-black text-amber-600 uppercase italic tracking-tighter mb-4 flex items-center">
+        <h3 class="font-black text-amber-600 uppercase  tracking-tighter mb-4 flex items-center">
             <i class="fas fa-crown text-amber-500 mr-2"></i> VIP Plans
         </h3>
         <div id="vipPlansContainer" class="space-y-4"></div>
@@ -146,15 +146,15 @@
     <div class="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-md border-t flex justify-around py-4 shadow-2xl z-50 rounded-t-[40px]">
         <div onclick="window.location.href='index.html'" class="text-center text-indigo-600 cursor-pointer">
             <i class="fas fa-home text-xl"></i>
-            <p class="text-[10px] font-black mt-1 uppercase italic">Home</p>
+            <p class="text-[10px] font-black mt-1 uppercase ">Home</p>
         </div>
         <div onclick="window.location.href='refer.html'" class="text-center text-slate-400 cursor-pointer">
             <i class="fas fa-users text-xl"></i>
-            <p class="text-[10px] font-black mt-1 uppercase italic">Refer</p>
+            <p class="text-[10px] font-black mt-1 uppercase ">Refer</p>
         </div>
         <div onclick="window.location.href='mine.html'" class="text-center text-slate-400 cursor-pointer">
             <i class="fas fa-user text-xl"></i>
-            <p class="text-[10px] font-black mt-1 uppercase italic">Profile</p>
+            <p class="text-[10px] font-black mt-1 uppercase ">Profile</p>
         </div>
     </div>
 
@@ -273,7 +273,7 @@
                     if(localStorage.getItem('seenNotifId') !== currentGlobalNotifId) hasNew = true;
                     listHtml += `<div class="bg-yellow-50 p-4 rounded-3xl border border-yellow-100 mb-2">
                         <div class="flex justify-between items-start mb-1">
-                            <p class="text-[9px] font-black text-yellow-600 uppercase italic">Important Notice</p>
+                            <p class="text-[9px] font-black text-yellow-600 uppercase ">Important Notice</p>
                             <p class="text-[7px] font-bold text-slate-400">${currentTimeStr}</p>
                         </div>
                         <p class="text-xs font-bold text-gray-700">${data.notice}</p>
@@ -286,7 +286,7 @@
                 hasNew = true; 
                 listHtml += `<div class="bg-indigo-50 p-4 rounded-3xl border border-indigo-100 mb-2">
                     <div class="flex justify-between items-start mb-1">
-                        <p class="text-[9px] font-black text-indigo-600 uppercase italic">Private Message</p>
+                        <p class="text-[9px] font-black text-indigo-600 uppercase ">Private Message</p>
                         <p class="text-[7px] font-bold text-slate-400">${currentTimeStr}</p>
                     </div>
                     <p class="text-xs font-bold text-gray-700">${userSnap.data().personalMsg}</p>
@@ -308,19 +308,19 @@
                 const p = d.data();
                 const isVip = p.name.toUpperCase().includes("VIP");
                 const html = `<div class="${isVip ? 'vip-card shadow-amber-100' : 'bg-white border-slate-100'} p-5 rounded-[45px] shadow-sm border flex gap-4 items-center relative overflow-hidden">
-                        <div class="absolute top-0 right-0 ${isVip ? 'bg-amber-100 text-amber-700' : 'bg-green-50 text-green-600'} px-4 py-1.5 rounded-bl-3xl text-[8px] font-black uppercase italic">${isVip ? 'VIP Privilege' : 'Daily Pay'}</div>
+                        <div class="absolute top-0 right-0 ${isVip ? 'bg-amber-100 text-amber-700' : 'bg-green-50 text-green-600'} px-4 py-1.5 rounded-bl-3xl text-[8px] font-black uppercase ">${isVip ? 'VIP Privilege' : 'Daily Pay'}</div>
                         <img src="${p.image}" class="w-24 h-24 rounded-[35px] object-cover bg-slate-50 shadow-inner">
                         <div class="flex-1">
-                            <h4 class="font-black ${isVip ? 'text-amber-900' : 'text-slate-800'} uppercase italic text-sm tracking-tighter">${p.name}</h4>
-                            <p class="text-[9px] font-bold text-green-600 uppercase italic mb-1">Daily Withdrawal Available</p>
+                            <h4 class="font-black ${isVip ? 'text-amber-900' : 'text-slate-800'} uppercase  text-sm tracking-tighter">${p.name}</h4>
+                            <p class="text-[9px] font-bold text-green-600 uppercase  mb-1">Daily Withdrawal Available</p>
                             <div class="grid grid-cols-3 gap-1 mt-3 text-xs">
                                 <div><p class="text-[7px] font-bold text-slate-400 uppercase leading-none">Daily</p><p class="font-black text-indigo-600">₹${p.daily}</p></div>
                                 <div><p class="text-[7px] font-bold text-slate-400 uppercase leading-none text-center">Total</p><p class="font-black text-green-600 text-center">₹${p.totalIncome || 0}</p></div>
                                 <div><p class="text-[7px] font-bold text-slate-400 uppercase leading-none text-right">Days</p><p class="font-black text-gray-800 text-right">${p.days}</p></div>
                             </div>
                             <div class="flex items-center justify-between mt-4">
-                                <span class="text-xl font-black text-slate-900 italic tracking-tighter">₹${p.price}</span>
-                                <button onclick="buyPlan('${d.id}', '${p.name}', ${p.price})" class="${isVip ? 'bg-amber-600' : 'bg-indigo-600'} text-white px-6 py-2.5 rounded-2xl text-[10px] font-black uppercase italic shadow-lg">Invest Now</button>
+                                <span class="text-xl font-black text-slate-900  tracking-tighter">₹${p.price}</span>
+                                <button onclick="buyPlan('${d.id}', '${p.name}', ${p.price})" class="${isVip ? 'bg-amber-600' : 'bg-indigo-600'} text-white px-6 py-2.5 rounded-2xl text-[10px] font-black uppercase  shadow-lg">Invest Now</button>
                             </div>
                         </div>
                     </div>`;
