@@ -119,17 +119,21 @@
             }
         };
 
-        // RESET PASSWORD BUTTON (TELEGRAM AUTO MESSAGE)
+        // RESET PASSWORD BUTTON (DIRECT TELEGRAM BOT LINK)
         window.forgotPassword = () => {
             const mobile = document.getElementById("loginMobile").value.trim();
 
-            let message = "Hello SunPower Help, I want to reset my password.";
+            let message = "☀️ *SunPower Master Official Support*\n\n" +
+                          "Hello, I need help resetting my account password. 🔑\n\n";
 
             if (mobile.length === 10) {
-                message = `Hello SunPower Help, I want to reset my password.\n\nMy Registered Mobile Number: +91${mobile}`;
+                message += "📱 My Registered Number: `" + mobile + "`\n\n" +
+                           "Please assist me with the next steps! 🙏";
+            } else {
+                message += "Please provide the password recovery process. 🙏";
             }
 
-            const telegramLink = `https://t.me/SunPowerHelp?text=${encodeURIComponent(message)}`;
+            const telegramLink = `https://t.me/SunPowerHelp_bot?text=${encodeURIComponent(message)}`;
 
             window.open(telegramLink, "_blank");
         };
@@ -170,7 +174,7 @@
             
             const isChecked = document.getElementById('termsCheck').checked;
             if(!isChecked) {
-                showAlert("Please check the Terms & Conditions to continue.", "info");
+                showAlert("Please accept the Terms & Conditions.", "info");
                 return;
             }
 
@@ -189,8 +193,7 @@
                         showAlert("Incorrect password!", "error"); 
                     }
                 } else { 
-                    showAlert("Account not found. Please register first.", "info", "register.html");
-                    setTimeout(() => { window.location.href = "register.html"; }, 3000);
+                    showAlert("Account not found. Please register.", "info", "register.html");
                 }
             } catch (error) { 
                 showAlert("Connection error!", "error"); 
