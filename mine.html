@@ -74,7 +74,7 @@
     </div>
 
     <div id="specialAdminArea" class="hidden px-5 mt-12">
-        <div onclick="window.location.href='admin-gate.html'" class="admin-glow flex items-center justify-between p-5 bg-blue-50 rounded-[30px] active:scale-95 transition-all cursor-pointer border-blue-200">
+        <div onclick="window.location.href='admin.html'" class="admin-glow flex items-center justify-between p-5 bg-blue-50 rounded-[30px] active:scale-95 transition-all cursor-pointer border-blue-200">
             <div class="flex items-center gap-4">
                 <div class="w-10 h-10 bg-blue-600 text-white rounded-2xl flex items-center justify-center shadow-lg shadow-blue-200">
                     <i class="fas fa-user-shield"></i>
@@ -143,7 +143,6 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // --- NAME MODAL ---
         window.editUsername = () => {
             document.getElementById('nameModal').classList.add('modal-active');
             document.getElementById('newNameInput').value = "";
@@ -161,7 +160,6 @@
             } else { alert("Min 3 characters!"); }
         };
 
-        // --- LOGOUT LOGIC ---
         window.confirmLogout = () => {
             document.getElementById('customAlert').classList.add('modal-active');
             document.getElementById('confirmBtn').onclick = () => {
@@ -171,7 +169,6 @@
         };
         window.closeAlert = () => document.getElementById('customAlert').classList.remove('modal-active');
 
-        // --- LOAD PROFILE ---
         async function loadProfile() {
             const mobile = localStorage.getItem('userMobile');
             if (!mobile) { window.location.href = "login.html"; return; }
@@ -191,7 +188,6 @@
                 document.getElementById('userName').innerText = data.username || "Guest User";
             }
 
-            // Investments
             const q = query(collection(db, "investments"), where("userMobile", "==", mobile));
             const snap = await getDocs(q);
             const plansList = document.getElementById('myPlansList');
@@ -214,10 +210,27 @@
                 const lastProcessed = p.daysProcessed || 0;
                 const pending = days - lastProcessed;
 
+                // --- INCOME LOGIC FIXED ---
                 if (pending > 0) {
                     const amt = pending * dailyInc;
+                    
+                    // १. बॅलन्स वाढवला
                     await updateDoc(userRef, { balance: increment(amt) });
+                    
+                    // २. दिवस अपडेट केले
                     await updateDoc(doc(db, "investments", d.id), { daysProcessed: days });
+                    
+                    // ३. ट्रान्झॅक्शन हिस्ट्रीमध्ये मेसेज टाकला
+                    await addDoc(collection(db, "transactions"), {
+                        userMobile: mobile,
+                        amount: amt,
+                        type: "Income",
+                        title: p.planName + " Profit",
+                        date: new Date().toISOString(),
+                        status: "Success",
+                        remark: `${pending} दिवसांचा नफा जमा झाला`
+                    });
+
                     currentBalance += amt;
                 }
 
