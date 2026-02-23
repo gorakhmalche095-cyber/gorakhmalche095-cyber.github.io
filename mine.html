@@ -221,16 +221,17 @@
                     await updateDoc(doc(db, "investments", d.id), { daysProcessed: days });
                     
                     // ३. ट्रान्झॅक्शन हिस्ट्रीमध्ये मेसेज टाकला
-                    await addDoc(collection(db, "transactions"), {
-                        userMobile: mobile,
-                        amount: amt,
-                        type: "Income",
-                        title: p.planName + " Profit",
-                        date: new Date().toISOString(),
-                        status: "Success",
-                        remark: `${pending} दिवसांचा नफा जमा झाला`
-                    });
-
+await addDoc(collection(db, "transactions"), {
+    userMobile: mobile,
+    amount: amt, 
+    type: "Income",
+    // इथे 'p.title' वापरा जेणेकरून 'SOLAR POWER V7' सारखे नाव येईल
+    title: `${p.title || 'PLAN'} PROFIT`, 
+    date: new Date().toISOString(),
+    status: "Success",
+    // मराठी मेसेज ऐवजी आता हा इंग्लिश मेसेज येईल
+    remark: "Income credited successfully" 
+});
                     currentBalance += amt;
                 }
 
