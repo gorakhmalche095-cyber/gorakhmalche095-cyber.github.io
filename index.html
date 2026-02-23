@@ -377,7 +377,55 @@ window.closePopup = () => {
                 document.getElementById('channelBtn').onclick = () => window.open(url, 'https://t.me/DRAGONHACKSUPPORT');
             }
         }
-        fetchUser(); fetchNotifications(); fetchPlans(); setupSupport();
+                // १. नोटीस बंद करण्यासाठी फंक्शन
+window.closeNotice = () => {
+    document.getElementById('noticeModal').classList.remove('modal-active');
+};
+
+// २. अ‍ॅडमिन नोटीस चेक करण्यासाठी फंक्शन (Firebase मधून डेटा ओढते)
+async function checkAdminNotice() {
+    // एकदा पाहिली असेल तर पुन्हा दाखवू नका
+    if (sessionStorage.getItem("noticeSeen") === "true") return;
+
+    try {
+        const noticeRef = doc(db, "adminSettings", "notice");
+        const snap = await getDoc(noticeRef);
+
+        if (snap.exists()) {
+            const data = snap.data();
+            if (data.active === true) {
+                document.getElementById('noticeText').innerText = data.message;
+                const imgTag = document.getElementById('noticeImg');
+                const imgCont = document.getElementById('imgContainer');
+                
+                if (data.image && data.image.trim() !== "") {
+                    imgTag.src = data.image;
+                    imgCont.classList.remove('hidden');
+                } else {
+                    imgCont.classList.add('hidden');
+                }
+                document.getElementById('noticeModal').classList.add('modal-active');
+                sessionStorage.setItem("noticeSeen", "true");
+            }
+        }
+    } catch (error) { console.log("Notice Error:", error); }
+}
+
+        fetchUser(); fetchNotifications(); fetchPlans(); setupSupport();checkAdminNotice();
     </script>
+    <div id="noticeModal" class="fixed inset-0 bg-black/80 z-[99999] hidden items-center justify-center p-6 backdrop-blur-sm">
+    <div class="bg-white w-full max-w-[340px] rounded-[30px] overflow-hidden shadow-2xl flex flex-col modal-animate">
+        <div id="imgContainer" class="hidden w-full h-auto">
+            <img id="noticeImg" src="" class="w-full h-auto block object-contain">
+        </div>
+        <div id="noticeContent" class="flex flex-col">
+            <p id="noticeText" class="text-sm font-bold text-slate-700 leading-snug px-6 pt-5 hidden text-center"></p>
+            <div class="p-6">
+                <button onclick="closeNotice()" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-black uppercase text-[10px] tracking-widest active:scale-95 transition-all">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 </body>
 </html>
