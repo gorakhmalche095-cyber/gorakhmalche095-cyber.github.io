@@ -80,17 +80,20 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getFirestore, doc, getDoc, setDoc, updateDoc, increment, collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyA3k5ByUuJ-1jtVovgZMsw1LBaBkn_nDo",
             authDomain: "new-investment-web.firebaseapp.com",
             projectId: "new-investment-web",
+            databaseURL: "https://new-investment-web-default-rtdb.firebaseio.com",
             storageBucket: "new-investment-web.firebasestorage.app",
             messagingSenderId: "1078188475858",
             appId: "1:1078188475858:web:b3777ea127aae8083740b"
         };
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
+        const rtdb = getDatabase(app);
         const mobile = localStorage.getItem('userMobile');
         if (!mobile) window.location.href = "login.html";
 
@@ -168,6 +171,29 @@
                 const reqId = "WID-" + Date.now();
                 await updateDoc(doc(db, "users", mobile), { balance: increment(-amt) });
                 await setDoc(doc(db, "withdrawals", reqId), { userMobile: mobile, amount: amt, bankName: bank, holderName: holder, accountNo: account, ifsc: ifscCode, status: "Pending", type: "withdraw", timestamp: Date.now(), remark: "" });
+                await set(ref(rtdb, "admin_alerts/" + reqId), {
+    amount: amt,
+    mobile: mobile,
+    status: "Pending",
+    time: Date.now()
+});
+fetch("https://api.telegram.org/bot8799513652:AAGjrkjJCi0_3ZgaDHew2mHX_kdopTImImY/sendMessage", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json"
+  },
+  body: JSON.stringify({
+    chat_id: "8449394257",
+    text:
+"🚨 NEW WITHDRAWAL REQUEST 🚨\n\n" +
+"📱 Mobile: " + mobile + "\n" +
+"💰 Amount: ₹" + amt + "\n\n" +
+"🏦 Bank: " + bank + "\n" +
+"👤 Holder: " + holder + "\n" +
+"🔢 Account No: " + account + "\n" +
+"🏷 IFSC: " + ifscCode
+  })
+});
                 showAlert("Withdrawal request submitted successfully!", "success", () => { location.reload(); });
             } catch (e) {
                 showAlert("System Error: " + e.message, "error");
