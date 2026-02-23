@@ -64,7 +64,7 @@
                         <button onclick="selectAmount(15000, this)" class="amt-btn py-3 rounded-2xl text-xs font-black bg-white text-slate-600">₹15000</button>
                     </div>
                     <input type="hidden" id="rechargeAmt" value="">
-                    <p id="selectedDisplay" class="text-center mt-3 text-2xl font-black text-blue-600 italic">₹0</p>
+                    <p id="selectedDisplay" class="text-center mt-3 text-2xl font-black text-blue-600 ">₹0</p>
                 </div>
 
                 <div>
@@ -73,7 +73,7 @@
                            class="w-full p-4 bg-slate-50 rounded-2xl border-none outline-none font-black text-gray-700 mt-1 shadow-inner border border-gray-100 tracking-[0.2em] text-center">
                     <p class="text-center text-[9px] text-gray-400 mt-2 font-bold uppercase tracking-tighter">* Payment proof requires exactly 12 digits</p>
                 </div>
-
+               
                 <button id="finalSubmitBtn" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-5 rounded-2xl font-black text-lg shadow-xl active:scale-95 transition-all uppercase  tracking-widest mt-4">
                     SUBMIT RECHARGE <i class="fas fa-paper-plane ml-2"></i>
                 </button>
@@ -232,16 +232,32 @@
                     status: "Pending",
                     remark: "", 
                     timestamp: Date.now()
-                });
+                }); 
+                    // 🔔 TELEGRAM DEPOSIT ALERT
+fetch("https://api.telegram.org/bot8799513652:AAGjrkjJCi0_3ZgaDHew2mHX_kdopTImImY/sendMessage", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({
+    chat_id: "8449394257",
+    text:
+"💰 NEW DEPOSIT REQUEST 💰\n\n" +
+"📱 Mobile: " + mobile + "\n" +
+"💵 Amount: ₹" + amt + "\n" +
+"🧾 UTR: " + utr + "\n" +
+"🕒 Time: " + new Date().toLocaleString()
+  })
+});         
 
                 showAlert("Recharge request sent successfully!", true);
                 setTimeout(() => { location.reload(); }, 2000);
+                
             } catch (e) {
                 showAlert("Error: " + e.message);
                 this.innerText = "SUBMIT RECHARGE";
                 this.disabled = false;
             }
         };
+        
 
         loadCustomQRs(); // कस्टमाइज्ड QR लोड करा
         fetchSettings();
