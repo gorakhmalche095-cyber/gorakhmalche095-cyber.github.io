@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Finance Control | SunPower</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #0a0a0f; color: #e2e8f0; font-family: 'Inter', sans-serif; }
+        .card { background: #12121a; border: 1px solid #1f1f27; border-radius: 20px; overflow: hidden; }
+        .btn-approve { background: #059669; transition: 0.3s; }
+        .btn-approve:hover { background: #10b981; }
+        .btn-reject { background: #dc2626; transition: 0.3s; }
+        .btn-reject:hover { background: #ef4444; }
+        .utr-box { background: #1a1a24; border: 1px dashed #3b82f6; color: #3b82f6; }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+
+    <div class="max-w-4xl mx-auto">
+        <div class="flex justify-between items-center mb-8 border-b border-gray-800 pb-4">
+            <div>
+                <h1 class="text-2xl font-bold text-blue-500 italic uppercase tracking-tighter">Finance Hub</h1>
+                <p class="text-[10px] text-gray-500 uppercase tracking-[0.2em]">Deposit & Withdrawal Master Control</p>
+            </div>
+            <button onclick="location.reload()" class="bg-gray-800 p-3 rounded-xl hover:bg-gray-700 transition">
+                <i class="fas fa-sync-alt"></i>
+            </button>
+        </div>
+
+        <div class="mb-10">
+            <h2 class="text-xs font-black text-blue-500 uppercase mb-4 flex items-center tracking-widest">
+                <i class="fas fa-bullhorn mr-2 text-[10px]"></i> Control Index Notice
+            </h2>
+            <div class="card p-6 border-l-4 border-blue-500">
+                <div class="space-y-4">
+                    <div>
+                        <label class="text-[10px] text-gray-500 font-bold uppercase block mb-1">Notice Message (Optional if Image added)</label>
+                        <input type="text" id="adminNoticeMsg" placeholder="Enter notice message..." 
+                            class="w-full bg-[#1a1a24] border border-gray-800 rounded-xl px-4 py-3 text-sm focus:border-blue-500 outline-none text-white">
+                    </div>
+                    <div>
+                        <label class="text-[10px] text-gray-500 font-bold uppercase block mb-1">Image Link (Optional if Text added)</label>
+                        <input type="text" id="adminNoticeImg" placeholder="https://example.com/photo.jpg" 
+                            class="w-full bg-[#1a1a24] border border-gray-800 rounded-xl px-4 py-3 text-sm focus:border-blue-500 outline-none text-white">
+                    </div>
+                    <div class="flex items-center gap-2 py-2">
+                        <input type="checkbox" id="adminNoticeActive" class="w-4 h-4 rounded accent-blue-500">
+                        <label for="adminNoticeActive" class="text-xs font-bold text-gray-300">SHOW NOTICE TO USERS</label>
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="updateNotice()" class="flex-1 bg-blue-600 hover:bg-blue-700 py-3 rounded-xl font-black text-[10px] text-white uppercase transition">Update Notice</button>
+                        <button onclick="deleteNotice()" class="flex-1 bg-red-600 hover:bg-red-700 py-3 rounded-xl font-black text-[10px] text-white uppercase transition">Delete / Hide</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="mb-10">
+            <h2 class="text-xs font-black text-orange-500 uppercase mb-4 flex items-center tracking-widest">
+                <i class="fas fa-arrow-down mr-2 text-[10px]"></i> Pending Deposits
+            </h2>
+            <div id="rechargeList" class="space-y-4">
+                <p class="text-xs text-gray-700 italic">Scanning database...</p>
+            </div>
+        </div>
+
+        <div>
+            <h2 class="text-xs font-black text-red-500 uppercase mb-4 flex items-center tracking-widest">
+                <i class="fas fa-arrow-up mr-2 text-[10px]"></i> Pending Withdrawals
+            </h2>
+            <div id="withdrawList" class="space-y-4">
+                <p class="text-xs text-gray-700 italic">Scanning database...</p>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, doc, getDoc, collection, getDocs, updateDoc, increment, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyA3k5ByUuJ-1jtVovgZMsw1LBaBkn_nDo",
+            authDomain: "new-investment-web.firebaseapp.com",
+            projectId: "new-investment-web",
+            storageBucket: "new-investment-web.firebasestorage.app",
+            messagingSenderId: "1078188475858",
+            appId: "1:1078188475858:web:b3777ea127aae8083740b"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // --- UPDATED NOTICE LOGIC ---
+        window.updateNotice = async () => {
+            const msg = document.getElementById('adminNoticeMsg').value.trim();
+            const img = document.getElementById('adminNoticeImg').value.trim();
+            const isActive = document.getElementById('adminNoticeActive').checked;
+
+            // आता मेसेज किंवा इमेज पैकी एक जरी असेल तरी चालेल
+            if (!msg && !img) { 
+                alert("Please enter either a Message or an Image Link!"); 
+                return; 
+            }
+
+            try {
+                await setDoc(doc(db, "adminSettings", "notice"), {
+                    message: msg || "", 
+                    image: img || "",
+                    active: isActive,
+                    timestamp: Date.now()
+                });
+                alert("Notice Updated Successfully!");
+            } catch (e) { alert("Error: " + e.message); }
+        };
+
+        window.deleteNotice = async () => {
+            if(!confirm("Hide this notice from all users?")) return;
+            try {
+                await updateDoc(doc(db, "adminSettings", "notice"), { active: false });
+                document.getElementById('adminNoticeActive').checked = false;
+                alert("Notice Hidden!");
+            } catch (e) { alert("Error: " + e.message); }
+        };
+
+        async function fetchCurrentNotice() {
+            try {
+                const nSnap = await getDoc(doc(db, "adminSettings", "notice"));
+                if (nSnap.exists()) {
+                    const data = nSnap.data();
+                    document.getElementById('adminNoticeMsg').value = data.message || "";
+                    document.getElementById('adminNoticeImg').value = data.image || "";
+                    document.getElementById('adminNoticeActive').checked = data.active || false;
+                }
+            } catch (e) { console.error("Notice Fetch Error:", e); }
+        }
+
+        // --- LOAD DEPOSITS & WITHDRAWALS ---
+        async function loadAllData() {
+            // RECHARGES
+            const rSnap = await getDocs(collection(db, "recharges"));
+            const rList = document.getElementById('rechargeList');
+            rList.innerHTML = "";
+            let rCount = 0;
+
+            rSnap.forEach(d => {
+                const r = d.data();
+                if(r.status === "Pending") {
+                    rCount++;
+                    rList.innerHTML += `
+                    <div class="card p-5 border-l-4 border-orange-500">
+                        <div class="flex justify-between items-start mb-3">
+                            <div>
+                                <p class="text-[10px] text-gray-500 font-bold uppercase mb-1">Mobile: <span class="text-white ml-1">${r.userMobile}</span></p>
+                                <p class="text-2xl font-black text-white">₹${r.amount}</p>
+                            </div>
+                            <span class="bg-orange-500/10 text-orange-500 text-[9px] px-3 py-1 rounded-full font-black border border-orange-500/20 italic">RECHARGE REQ</span>
+                        </div>
+                        <div class="utr-box p-3 rounded-lg mb-4 text-center">
+                            <p class="text-[9px] uppercase font-bold text-gray-400 mb-1">Transaction UTR:</p>
+                            <p class="text-sm font-black tracking-widest">${r.utr || 'NO UTR PROVIDED'}</p>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="handleRecharge('${d.id}','${r.userMobile}',${r.amount},'Approved')" class="btn-approve flex-1 py-3 rounded-xl font-black text-[10px] text-white">APPROVE</button>
+                            <button onclick="handleRecharge('${d.id}','${r.userMobile}',${r.amount},'Rejected')" class="btn-reject flex-1 py-3 rounded-xl font-black text-[10px] text-white">REJECT</button>
+                        </div>
+                    </div>`;
+                }
+            });
+            if(rCount === 0) rList.innerHTML = "<div class='card p-6 text-center text-xs text-gray-600 font-bold uppercase'>No Pending Deposits</div>";
+
+            // WITHDRAWALS
+            const wSnap = await getDocs(collection(db, "withdrawals"));
+            const wList = document.getElementById('withdrawList');
+            wList.innerHTML = "";
+            let wCount = 0;
+
+            wSnap.forEach(d => {
+                const w = d.data();
+                if(w.status === "Pending") {
+                    wCount++;
+                    wList.innerHTML += `
+                    <div class="card p-5 border-l-4 border-red-500">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <p class="text-[10px] text-gray-500 font-bold uppercase mb-1">Mobile: <span class="text-white ml-1">${w.userMobile}</span></p>
+                                <p class="text-2xl font-black text-white">₹${w.amount}</p>
+                            </div>
+                            <span class="bg-red-500/10 text-red-500 text-[9px] px-3 py-1 rounded-full font-black border border-red-500/20 italic">WITHDRAW REQ</span>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="handleWithdraw('${d.id}','Completed')" class="btn-approve flex-1 py-3 rounded-xl font-black text-[10px] text-white uppercase">Mark as Paid</button>
+                            <button onclick="handleWithdraw('${d.id}','Rejected')" class="btn-reject flex-1 py-3 rounded-xl font-black text-[10px] text-white uppercase tracking-wider">Reject & Refund</button>
+                        </div>
+                    </div>`;
+                }
+            });
+            if(wCount === 0) wList.innerHTML = "<div class='card p-6 text-center text-xs text-gray-600 font-bold uppercase'>No Pending Withdrawals</div>";
+        }
+
+        window.handleRecharge = async (id, mob, amt, status) => {
+            const remark = prompt(`Enter Remark for ${status}:`, status === 'Approved' ? 'Payment Verified' : 'Invalid UTR Number');
+            if (remark === null) return;
+            try {
+                if (status === 'Approved') {
+                    await updateDoc(doc(db, "users", mob), { balance: increment(amt), totalDeposit: increment(amt) });
+                }
+                await updateDoc(doc(db, "recharges", id), { status: status, remark: remark });
+                alert(`Deposit ${status}!`);
+                loadAllData();
+            } catch (e) { alert("Error: " + e.message); }
+        };
+
+        window.handleWithdraw = async (id, status) => {
+            const remark = prompt(`Enter Remark for ${status}:`, status === 'Completed' ? 'Payment Success' : 'Wrong Bank Details');
+            if (remark === null) return;
+            try {
+                const docRef = doc(db, "withdrawals", id);
+                const docSnap = await getDoc(docRef);
+                const wData = docSnap.data();
+                if (status === 'Rejected') {
+                    await updateDoc(doc(db, "users", wData.userMobile), { balance: increment(Number(wData.amount)) });
+                }
+                await updateDoc(docRef, { status: status, remark: remark });
+                alert(status === 'Rejected' ? `Refunded!` : `Paid Successfully!`);
+                loadAllData();
+            } catch (e) { alert("Error: " + e.message); }
+        };
+
+        fetchCurrentNotice();
+        loadAllData();
+    </script>
+</body>
+</html>
