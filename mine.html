@@ -87,8 +87,9 @@
 
     <div class="grid grid-cols-2 gap-4 px-5 mt-8">
         <div class="bg-white p-4 rounded-3xl shadow-sm border border-gray-100 text-center">
-            <p class="text-gray-400 text-[10px] font-bold uppercase">Total Invested</p>
-            <p id="totalInvest" class="text-lg font-black text-gray-800">₹ 0</p>
+            <p class="text-gray-400 text-[10px] font-bold uppercase">Total Deposit</p>
+<p id="userTotalDeposit" class="text-lg font-black text-gray-800">₹ 0</p>
+ 
         </div>
         <div class="bg-white p-4 rounded-3xl shadow-sm border border-gray-100 text-center">
             <p class="text-gray-400 text-[10px] font-bold uppercase">Total Earnings</p>
@@ -143,6 +144,7 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
+        // --- Functions ---
         window.editUsername = () => {
             document.getElementById('nameModal').classList.add('modal-active');
             document.getElementById('newNameInput').value = "";
@@ -180,6 +182,15 @@
 
             const userRef = doc(db, "users", mobile);
             const userSnap = await getDoc(userRef);
+            if (userSnap.exists()) {
+    const data = userSnap.data();
+    document.getElementById('userName').innerText = data.username || "Guest";
+    document.getElementById('userBalance').innerText = (data.balance || 0).toFixed(2);
+
+    // इकडे बदल करा: डेटाबेसमधील totalDeposit इकडे दाखवा
+    document.getElementById('userTotalDeposit').innerText = "₹ " + (data.totalDeposit || 0);
+}
+
             let currentBalance = 0;
 
             if (userSnap.exists()) {
@@ -195,13 +206,15 @@
             let tInv = 0, tEarn = 0;
             const now = new Date();
 
-            if (snap.empty) plansList.innerHTML = `<p class="text-center text-gray-400 text-sm py-4">No active projects found.</p>`;
+            if (snap.empty) {
+                plansList.innerHTML = `<p class="text-center text-gray-400 text-sm py-4">No active projects found.</p>`;
+            }
 
             for (const d of snap.docs) {
                 const p = d.data();
                 const buyDate = new Date(p.date);
-                const dailyInc = Number(p.dailyIncome || 0);
-                const validity = Number(p.validity || p.planValidity || 30);
+                const dailyInc = Number(p.daily || p.dailyIncome || 0); // डेटाबेसमधील 'daily' चेक करतोय
+                const validity = Number(p.validity || 30);
                 
                 const diff = now - buyDate;
                 let days = Math.floor(diff / (1000 * 60 * 60 * 24));
@@ -213,29 +226,31 @@
                 // --- INCOME LOGIC FIXED ---
                 if (pending > 0) {
                     const amt = pending * dailyInc;
-                    
-                    // १. बॅलन्स वाढवला
-                    await updateDoc(userRef, { balance: increment(amt) });
-                    
-                    // २. दिवस अपडेट केले
-                    await updateDoc(doc(db, "investments", d.id), { daysProcessed: days });
-                    
-                    // ३. ट्रान्झॅक्शन हिस्ट्रीमध्ये मेसेज टाकला
-await addDoc(collection(db, "transactions"), {
-    userMobile: mobile,
-    amount: amt, 
-    type: "Income",
-    // इथे 'p.title' वापरा जेणेकरून 'SOLAR POWER V7' सारखे नाव येईल
-    title: `${p.title || 'PLAN'} PROFIT`, 
-    date: new Date().toISOString(),
-    status: "Success",
-    // मराठी मेसेज ऐवजी आता हा इंग्लिश मेसेज येईल
-    remark: "Income credited successfully" 
-});
-                    currentBalance += amt;
+                    try {
+                        // १. बॅलन्स वाढवला
+                        await updateDoc(userRef, { balance: increment(amt) });
+                        
+                        // २. दिवस अपडेट केले
+                        await updateDoc(doc(db, "investments", d.id), { daysProcessed: days });
+                        
+                        // ३. ट्रान्झॅक्शन हिस्ट्रीमध्ये मेसेज टाकला
+                        await addDoc(collection(db, "transactions"), {
+                            userMobile: mobile,
+                            amount: amt, 
+                            type: "Income",
+                            title: `${p.name || p.planName || 'PLAN'} Income`, 
+                            date: new Date().toISOString(),
+                            status: "Success",
+                            remark: `day ${pending} income credit successfully`,
+                            timestamp: Date.now()
+                        });
+                        currentBalance += amt;
+                    } catch (error) {
+                        console.error("Error recording income:", error);
+                    }
                 }
 
-                tInv += Number(p.buyPrice || p.price || 0);
+                tInv += Number(p.price || p.buyPrice || 0);
                 const earned = (p.daysProcessed || days) * dailyInc;
                 tEarn += earned;
 
@@ -246,11 +261,11 @@ await addDoc(collection(db, "transactions"), {
                     <div class="bg-white p-5 rounded-3xl shadow-sm border-l-4 border-blue-600">
                         <div class="flex justify-between items-start mb-3">
                             <div>
-                                <h4 class="font-bold text-gray-800 uppercase text-xs">${p.planName}</h4>
+                                <h4 class="font-bold text-gray-800 uppercase text-xs">${p.name || p.planName}</h4>
                                 <p class="text-[9px] text-gray-400 font-bold">START: ${dateStr}</p>
                             </div>
                             <div class="text-right">
-                                <p class="text-blue-600 font-black text-sm">₹${p.buyPrice || p.price}</p>
+                                <p class="text-blue-600 font-black text-sm">₹${p.price || p.buyPrice}</p>
                                 <p class="text-[8px] font-bold text-green-600">Profit: ₹${earned.toFixed(2)}</p>
                             </div>
                         </div>
