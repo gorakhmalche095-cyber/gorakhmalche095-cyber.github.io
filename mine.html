@@ -88,8 +88,7 @@
     <div class="grid grid-cols-2 gap-4 px-5 mt-8">
         <div class="bg-white p-4 rounded-3xl shadow-sm border border-gray-100 text-center">
             <p class="text-gray-400 text-[10px] font-bold uppercase">Total Deposit</p>
-<p id="userTotalDeposit" class="text-lg font-black text-gray-800">₹ 0</p>
- 
+            <p id="userTotalDeposit" class="text-lg font-black text-gray-800">₹ 0</p>
         </div>
         <div class="bg-white p-4 rounded-3xl shadow-sm border border-gray-100 text-center">
             <p class="text-gray-400 text-[10px] font-bold uppercase">Total Earnings</p>
@@ -144,7 +143,7 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // --- Functions ---
+        // --- Window Level Functions ---
         window.editUsername = () => {
             document.getElementById('nameModal').classList.add('modal-active');
             document.getElementById('newNameInput').value = "";
@@ -182,28 +181,23 @@
 
             const userRef = doc(db, "users", mobile);
             const userSnap = await getDoc(userRef);
-            if (userSnap.exists()) {
-    const data = userSnap.data();
-    document.getElementById('userName').innerText = data.username || "Guest";
-    document.getElementById('userBalance').innerText = (data.balance || 0).toFixed(2);
-
-    // इकडे बदल करा: डेटाबेसमधील totalDeposit इकडे दाखवा
-    document.getElementById('userTotalDeposit').innerText = "₹ " + (data.totalDeposit || 0);
-}
-
             let currentBalance = 0;
 
+            // १. युजरचा डेटा आणि डिपॉझिट लोड करणे
             if (userSnap.exists()) {
                 const data = userSnap.data();
-                currentBalance = data.balance || 0;
                 document.getElementById('userName').innerText = data.username || "Guest User";
+                currentBalance = data.balance || 0;
+                document.getElementById('userBalance').innerText = currentBalance.toFixed(2);
+                document.getElementById('userTotalDeposit').innerText = "₹ " + (data.totalDeposit || 0);
             }
 
+            // २. इन्व्हेस्टमेंट डेटा लोड करणे
             const q = query(collection(db, "investments"), where("userMobile", "==", mobile));
             const snap = await getDocs(q);
             const plansList = document.getElementById('myPlansList');
             plansList.innerHTML = "";
-            let tInv = 0, tEarn = 0;
+            let tEarnTotal = 0; // Total Earnings साठी व्हेरिएबल
             const now = new Date();
 
             if (snap.empty) {
@@ -213,7 +207,7 @@
             for (const d of snap.docs) {
                 const p = d.data();
                 const buyDate = new Date(p.date);
-                const dailyInc = Number(p.daily || p.dailyIncome || 0); // डेटाबेसमधील 'daily' चेक करतोय
+                const dailyInc = Number(p.daily || p.dailyIncome || 0);
                 const validity = Number(p.validity || 30);
                 
                 const diff = now - buyDate;
@@ -223,17 +217,13 @@
                 const lastProcessed = p.daysProcessed || 0;
                 const pending = days - lastProcessed;
 
-                // --- INCOME LOGIC FIXED ---
+                // --- इन्कम लॉजिक (ऑटो क्रेडिट) ---
                 if (pending > 0) {
                     const amt = pending * dailyInc;
                     try {
-                        // १. बॅलन्स वाढवला
                         await updateDoc(userRef, { balance: increment(amt) });
-                        
-                        // २. दिवस अपडेट केले
                         await updateDoc(doc(db, "investments", d.id), { daysProcessed: days });
                         
-                        // ३. ट्रान्झॅक्शन हिस्ट्रीमध्ये मेसेज टाकला
                         await addDoc(collection(db, "transactions"), {
                             userMobile: mobile,
                             amount: amt, 
@@ -250,9 +240,9 @@
                     }
                 }
 
-                tInv += Number(p.price || p.buyPrice || 0);
-                const earned = (p.daysProcessed || days) * dailyInc;
-                tEarn += earned;
+                // एका प्लॅनचा नफा
+                const earnedFromThisPlan = days * dailyInc;
+                tEarnTotal += earnedFromThisPlan; // सर्व प्लॅन्सचा एकूण नफा मोजणे
 
                 const prog = Math.round((days / validity) * 100);
                 const dateStr = buyDate.toLocaleString('en-GB', {day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit', hour12:true});
@@ -265,8 +255,8 @@
                                 <p class="text-[9px] text-gray-400 font-bold">START: ${dateStr}</p>
                             </div>
                             <div class="text-right">
-                                <p class="text-blue-600 font-black text-sm">₹${p.price || p.buyPrice}</p>
-                                <p class="text-[8px] font-bold text-green-600">Profit: ₹${earned.toFixed(2)}</p>
+                                <p class="text-blue-600 font-black text-sm">₹${p.price || p.buyPrice || 0}</p>
+                                <p class="text-[8px] font-bold text-green-600">Profit: ₹${earnedFromThisPlan.toFixed(2)}</p>
                             </div>
                         </div>
                         <div class="flex justify-between text-[9px] font-black uppercase mb-1">
@@ -279,9 +269,9 @@
                     </div>`;
             }
 
+            // ३. स्क्रीनवर फायनल डेटा दाखवणे
             document.getElementById('userBalance').innerText = currentBalance.toFixed(2);
-            document.getElementById('totalInvest').innerText = "₹ " + tInv;
-            document.getElementById('totalEarn').innerText = "₹ " + tEarn.toFixed(2);
+            document.getElementById('totalEarn').innerText = "₹ " + tEarnTotal.toFixed(2);
         }
 
         loadProfile();
