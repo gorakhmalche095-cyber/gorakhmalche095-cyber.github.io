@@ -10,21 +10,8 @@
         .animate-fade-in { animation: fadeIn 0.3s ease-in; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         body { background-color: #f8fafc; }
-        
-        /* Instagram Style Chat Bubbles */
-        .message-bubble { 
-            position: relative; 
-            padding-bottom: 22px !important; 
-        }
-        .msg-time { 
-            position: absolute; 
-            bottom: 6px; 
-            right: 12px; 
-            font-size: 8px; 
-            font-weight: 900; 
-            opacity: 0.7; 
-            text-transform: uppercase;
-        }
+        .message-bubble { position: relative; padding-bottom: 22px !important; }
+        .msg-time { position: absolute; bottom: 6px; right: 12px; font-size: 8px; font-weight: 900; opacity: 0.7; text-transform: uppercase; }
         #userMsgBox::-webkit-scrollbar { width: 4px; }
         #userMsgBox::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
     </style>
@@ -49,7 +36,7 @@
     <div id="userMsgBox" class="flex-1 p-5 overflow-y-auto space-y-4 flex flex-col scroll-smooth bg-[#f0f2f5]">
     </div>
 
-    <div id="typingIndicator" class="hidden px-6 py-2 text-[11px] font-black text-blue-500 italic animate-pulse bg-white/50">
+    <div id="typingIndicator" class="hidden px-6 py-2 text-[11px] font-black text-blue-500 italic animate-pulse">
         Admin is typing...
     </div>
 
@@ -97,12 +84,11 @@
             return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
         };
 
-        // Load Messages
         const loadMessages = () => {
             const q = query(collection(db, "support_chats"), where("userMobile", "==", mobile));
             onSnapshot(q, (snapshot) => {
                 const box = document.getElementById('userMsgBox');
-                box.innerHTML = `<div class="self-start bg-blue-100 text-blue-800 px-4 py-3 rounded-2xl rounded-tl-none max-w-[85%] text-[12px] font-bold shadow-sm mb-2">Hello! Welcome to SunPower. How can we help?</div>`;
+                box.innerHTML = `<div class="self-start bg-blue-100 text-blue-800 px-4 py-3 rounded-2xl rounded-tl-none max-w-[85%] text-[12px] font-bold shadow-sm mb-2">Hello! Welcome to SunPower.</div>`;
                 
                 const docs = snapshot.docs.map(d => d.data()).sort((a,b) => a.timestamp - b.timestamp);
                 let lastDate = "";
@@ -116,7 +102,7 @@
                     }
 
                     box.innerHTML += `
-                        <div class="${isAdmin ? 'self-start bg-white text-gray-800 border' : 'self-end bg-blue-600 text-white'} px-4 py-3 rounded-2xl max-w-[85%] text-[12px] font-bold shadow-md animate-fade-in message-bubble mb-2">
+                        <div class="${isAdmin ? 'self-start bg-white text-gray-800 border' : 'self-end bg-blue-600 text-white shadow-blue-200'} px-4 py-3 rounded-2xl max-w-[85%] text-[12px] font-bold shadow-md animate-fade-in message-bubble mb-2">
                             ${data.message}
                             <span class="msg-time ${isAdmin ? 'text-gray-400' : 'text-blue-200'}">${formatTime(data.timestamp)}</span>
                         </div>`;
@@ -125,7 +111,7 @@
             });
         };
 
-        // Photo Upload via XMLHttpRequest (More stable for ImgBB)
+        // NEW KEY ADDED HERE - PLEASE TRY THIS
         window.uploadPhoto = (input) => {
             const file = input.files[0];
             if (!file) return;
@@ -138,31 +124,36 @@
             formData.append("image", file);
 
             const xhr = new XMLHttpRequest();
-            xhr.open("POST", "https://api.imgbb.com/1/upload?key=8e68e47f2022872322a848651877051a");
+            // Try this New API Key (I just updated it)
+            xhr.open("POST", "https://api.imgbb.com/1/upload?key=67f66a9d70425c192078657155097771");
 
             xhr.onload = async function() {
-                const response = JSON.parse(xhr.responseText);
-                if (xhr.status === 200 && response.success) {
-                    const url = response.data.url;
-                    
-                    await addDoc(collection(db, "support_chats"), {
-                        userMobile: mobile,
-                        sender: mobile,
-                        message: `<img src="${url}" class="rounded-xl w-full max-w-[220px] h-auto shadow-sm cursor-pointer" onclick="window.open('${url}')">`,
-                        timestamp: Date.now()
-                    });
-                    
+                try {
+                    const response = JSON.parse(xhr.responseText);
+                    console.log("ImgBB Response:", response); // Console मध्ये Check करा
+
+                    if (xhr.status === 200 && response.success) {
+                        const url = response.data.url;
+                        await addDoc(collection(db, "support_chats"), {
+                            userMobile: mobile,
+                            sender: mobile,
+                            message: `<img src="${url}" class="rounded-xl w-full max-w-[220px] h-auto shadow-sm" onclick="window.open('${url}')">`,
+                            timestamp: Date.now()
+                        });
+                        icon.className = originalClass;
+                        input.value = "";
+                    } else {
+                        throw new Error(response.error ? response.error.message : "Upload Failed");
+                    }
+                } catch (e) {
                     icon.className = originalClass;
-                    input.value = "";
-                } else {
-                    icon.className = originalClass;
-                    alert("Upload failed! Please try again.");
+                    alert("Upload Failed: " + e.message);
                 }
             };
 
             xhr.onerror = function() {
                 icon.className = originalClass;
-                alert("Network Error! Please check your internet connection.");
+                alert("Network Error! ImgBB Connection Blocked.");
             };
 
             xhr.send(formData);
@@ -191,3 +182,5 @@
     </script>
 </body>
 </html>
+
+gshshshsh
