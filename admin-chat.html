@@ -62,7 +62,12 @@
 
         <div id="inputArea" class="p-4 bg-white border-t hidden shadow-inner">
             <div class="flex gap-3 max-w-4xl mx-auto items-center">
-                <input type="text" id="adminReplyInput" placeholder="Type your message here..." class="flex-1 bg-gray-100 rounded-2xl px-6 py-4 text-sm font-bold outline-none border-none focus:ring-2 focus:ring-blue-500">
+                <input type="text" id="adminReplyInput" 
+                    oninput="updateTyping(true)" 
+                    onblur="updateTyping(false)"
+                    placeholder="Type your message here..." 
+                    class="flex-1 bg-gray-100 rounded-2xl px-6 py-4 text-sm font-bold outline-none border-none focus:ring-2 focus:ring-blue-500">
+                
                 <button onclick="sendAdminReply()" class="bg-blue-600 text-white w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg active:scale-90 transition-all">
                     <i class="fas fa-paper-plane"></i>
                 </button>
@@ -77,27 +82,18 @@
         </div>
         
         <div class="p-5 flex-1">
-            
             <button onclick="window.location.href='moniter.html'" class="action-btn">
-                <span> User Monitor</span>
-                <i class="fas fa-user-cog text-blue-500"></i>
+                <span> User Monitor</span> <i class="fas fa-user-cog text-blue-500"></i>
             </button>
-
             <button onclick="window.location.href='newadmin.html'" class="action-btn">
-                <span>Payment manegement</span>
-                <i class="fas fa-wallet text-green-500"></i>
+                <span>Payment management</span> <i class="fas fa-wallet text-green-500"></i>
             </button>
-
             <button onclick="window.location.href='admin.html'" class="action-btn">
-                <span>Plan Settings</span>
-                <i class="fas fa-box-open text-orange-500"></i>
+                <span>Plan Settings</span> <i class="fas fa-box-open text-orange-500"></i>
             </button>
-
             <button onclick="window.location.href='qr-admin.html'" class="action-btn">
-                <span>Qr Admin</span>
-                <i class="fas fa-tools text-purple-500"></i>
+                <span>Qr Admin</span> <i class="fas fa-tools text-purple-500"></i>
             </button>
-
         </div>
 
         <div class="p-4 bg-gray-50 border-t">
@@ -122,14 +118,27 @@
         const db = getFirestore(app);
         let activeUser = null;
         let unsubscribe = null;
+        let typingTimer; // टायपिंगसाठी टाइमर
 
-        // Drawer Toggle Functions
         window.toggleLeftDrawer = () => document.getElementById('userListSection').classList.toggle('active');
         window.toggleRightDrawer = () => document.getElementById('rightDrawer').classList.toggle('active');
 
+        // --- NEW: Typing Update Function ---
+        window.updateTyping = async (isTyping) => {
+            if (!activeUser) return;
+            const typingRef = doc(db, "typing_status", activeUser);
+            try {
+                await setDoc(typingRef, { isTyping: isTyping }, { merge: true });
+                clearTimeout(typingTimer);
+                if (isTyping) {
+                    typingTimer = setTimeout(() => updateTyping(false), 3000);
+                }
+            } catch (err) { console.error(err); }
+        };
+
         const formatTime = (ts) => ts ? new Date(ts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true }) : "";
 
-        // १. युजर लिस्ट लोड करणे (Real-time)
+        // १. युजर लिस्ट लोड करणे
         onSnapshot(query(collection(db, "support_chats"), orderBy("timestamp", "desc")), (snapshot) => {
             const users = {};
             snapshot.docs.forEach(doc => {
@@ -184,6 +193,7 @@
             const msg = input.value.trim();
             if(!msg || !activeUser) return;
             input.value = "";
+            updateTyping(false); // मेसेज पाठवल्यावर टायपिंग बंद
             await addDoc(collection(db, "support_chats"), { 
                 userMobile: activeUser, 
                 sender: "Admin", 
@@ -196,3 +206,4 @@
     </script>
 </body>
 </html>
+
