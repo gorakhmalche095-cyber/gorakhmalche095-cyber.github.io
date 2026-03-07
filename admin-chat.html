@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Support | SunPower</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        /* Left Drawer Logic */
+        #userListSection { transition: all 0.3s ease-in-out; position: absolute; left: -100%; z-index: 100; height: 100%; width: 280px; }
+        #userListSection.active { left: 0; }
+
+        /* Right Drawer Logic */
+        #rightDrawer { transition: all 0.3s ease-in-out; position: absolute; right: -100%; z-index: 100; height: 100%; width: 260px; background: white; border-left: 1px solid #e2e8f0; }
+        #rightDrawer.active { right: 0; }
+
+        @media (min-width: 1024px) {
+            #userListSection { position: relative; left: 0; width: 25%; }
+            #rightDrawer { position: relative; right: 0; width: 20%; }
+        }
+        
+        .message-bubble { position: relative; padding: 10px 14px 24px 14px !important; max-width: 75%; font-size: 13px; font-weight: 600; border-radius: 18px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .msg-time { position: absolute; bottom: 6px; right: 12px; font-size: 8px; font-weight: 900; text-transform: uppercase; opacity: 0.6; }
+        
+        /* Action Button Style */
+        .action-btn { width: 100%; padding: 14px; margin-bottom: 12px; border-radius: 15px; background: #f8fafc; font-weight: 800; font-size: 12px; color: #1e293b; display: flex; align-items: center; justify-content: space-between; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); border: 1px solid #f1f5f9; }
+        .action-btn:hover { background: #3b82f6; color: white; transform: translateY(-3px); box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.3); border-color: #3b82f6; }
+    </style>
+</head>
+<body class="bg-gray-50 flex h-screen overflow-hidden">
+
+    <div id="userListSection" class="bg-white border-r flex flex-col shadow-xl lg:shadow-none">
+        <div class="p-6 bg-blue-600 text-white font-black flex justify-between items-center shadow-md">
+            <span class="italic tracking-tighter">ACTIVE USERS</span>
+            <button onclick="toggleLeftDrawer()" class="lg:hidden"><i class="fas fa-times"></i></button>
+        </div>
+        <div id="userList" class="flex-1 overflow-y-auto">
+            <p class="p-8 text-center text-[10px] text-gray-400 font-black uppercase tracking-widest animate-pulse">Scanning Chats...</p>
+        </div>
+    </div>
+
+    <div class="flex-1 flex flex-col h-full relative">
+        <div class="p-4 bg-white border-b flex items-center justify-between shadow-sm z-10">
+            <div class="flex items-center gap-3">
+                <button onclick="toggleLeftDrawer()" class="bg-blue-50 text-blue-600 p-3 rounded-xl lg:hidden active:scale-90 transition-all">
+                    <i class="fas fa-users"></i>
+                </button>
+                <h2 id="chatHeader" class="font-black text-gray-800 uppercase italic text-xs tracking-tight">Admin Messenger</h2>
+            </div>
+            <button onclick="toggleRightDrawer()" class="bg-gray-800 text-white p-3 rounded-xl active:scale-90 transition-all shadow-lg">
+                <i class="fas fa-th-large"></i>
+            </button>
+        </div>
+
+        <div id="adminMsgBox" class="flex-1 p-6 overflow-y-auto space-y-4 flex flex-col scroll-smooth bg-[#f0f2f5]">
+            <div class="m-auto text-center opacity-10">
+                <i class="fas fa-headset text-9xl mb-4 text-blue-600"></i>
+                <p class="font-black italic text-xs tracking-[0.3em]">SELECT USER TO REPLY</p>
+            </div>
+        </div>
+
+        <div id="inputArea" class="p-4 bg-white border-t hidden shadow-inner">
+            <div class="flex gap-3 max-w-4xl mx-auto items-center">
+                <input type="text" id="adminReplyInput" placeholder="Type your message here..." class="flex-1 bg-gray-100 rounded-2xl px-6 py-4 text-sm font-bold outline-none border-none focus:ring-2 focus:ring-blue-500">
+                <button onclick="sendAdminReply()" class="bg-blue-600 text-white w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg active:scale-90 transition-all">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="rightDrawer" class="flex flex-col shadow-2xl lg:shadow-none">
+        <div class="p-6 bg-gray-900 text-white font-black flex justify-between items-center shadow-md">
+            <span class="text-[10px] tracking-widest uppercase italic">Quick Links</span>
+            <button onclick="toggleRightDrawer()" class="lg:hidden"><i class="fas fa-chevron-right"></i></button>
+        </div>
+        
+        <div class="p-5 flex-1">
+            
+            <button onclick="window.location.href='moniter.html'" class="action-btn">
+                <span> User Monitor</span>
+                <i class="fas fa-user-cog text-blue-500"></i>
+            </button>
+
+            <button onclick="window.location.href='newadmin.html'" class="action-btn">
+                <span>Payment manegement</span>
+                <i class="fas fa-wallet text-green-500"></i>
+            </button>
+
+            <button onclick="window.location.href='admin.html'" class="action-btn">
+                <span>Plan Settings</span>
+                <i class="fas fa-box-open text-orange-500"></i>
+            </button>
+
+            <button onclick="window.location.href='qr-admin.html'" class="action-btn">
+                <span>Qr Admin</span>
+                <i class="fas fa-tools text-purple-500"></i>
+            </button>
+
+        </div>
+
+        <div class="p-4 bg-gray-50 border-t">
+            <div class="text-[8px] text-gray-400 font-black text-center uppercase tracking-[0.2em]">SunPower Admin Panel v2.5</div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, query, onSnapshot, addDoc, orderBy, where, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyA3k5ByUuJ-1jtVovgZMsw1LBaBkn_nDo",
+            authDomain: "new-investment-web.firebaseapp.com",
+            projectId: "new-investment-web",
+            storageBucket: "new-investment-web.firebasestorage.app",
+            messagingSenderId: "1078188475858",
+            appId: "1:1078188475858:web:b3777ea127aae8083740b"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        let activeUser = null;
+        let unsubscribe = null;
+
+        // Drawer Toggle Functions
+        window.toggleLeftDrawer = () => document.getElementById('userListSection').classList.toggle('active');
+        window.toggleRightDrawer = () => document.getElementById('rightDrawer').classList.toggle('active');
+
+        const formatTime = (ts) => ts ? new Date(ts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true }) : "";
+
+        // १. युजर लिस्ट लोड करणे (Real-time)
+        onSnapshot(query(collection(db, "support_chats"), orderBy("timestamp", "desc")), (snapshot) => {
+            const users = {};
+            snapshot.docs.forEach(doc => {
+                const data = doc.data();
+                if(!users[data.userMobile]) users[data.userMobile] = { msg: data.message, time: data.timestamp };
+            });
+
+            const listDiv = document.getElementById('userList');
+            listDiv.innerHTML = "";
+            Object.keys(users).forEach(mobile => {
+                listDiv.innerHTML += `
+                    <div onclick="openChat('${mobile}')" class="p-4 border-b hover:bg-blue-50 cursor-pointer flex items-center gap-3 transition-all ${activeUser === mobile ? 'bg-blue-50 border-l-4 border-blue-600' : ''}">
+                        <div class="w-10 h-10 bg-blue-600 text-white rounded-full flex items-center justify-center font-black text-[10px] shadow-sm">${mobile.slice(-2)}</div>
+                        <div class="flex-1 overflow-hidden">
+                            <div class="flex justify-between items-center mb-1">
+                                <p class="font-black text-[11px] text-gray-800 tracking-tight">${mobile}</p>
+                                <span class="text-[8px] font-bold text-gray-400">${formatTime(users[mobile].time)}</span>
+                            </div>
+                            <p class="text-[10px] text-gray-500 truncate font-bold italic">${users[mobile].msg.replace(/<[^>]*>?/gm, '[Photo]')}</p>
+                        </div>
+                    </div>`;
+            });
+        });
+
+        // २. चॅट ओपन करण्याची लॉजिक
+        window.openChat = (mobile) => {
+            activeUser = mobile;
+            document.getElementById('chatHeader').innerText = "CHAT WITH: " + mobile;
+            document.getElementById('inputArea').classList.remove('hidden');
+
+            if (unsubscribe) unsubscribe();
+            const qChat = query(collection(db, "support_chats"), where("userMobile", "==", mobile));
+            unsubscribe = onSnapshot(qChat, (snapshot) => {
+                const box = document.getElementById('adminMsgBox');
+                box.innerHTML = "";
+                const docs = snapshot.docs.map(d => d.data()).sort((a,b) => a.timestamp - b.timestamp);
+                docs.forEach(data => {
+                    const isAdmin = data.sender === "Admin";
+                    box.innerHTML += `
+                        <div class="${isAdmin ? 'self-end bg-blue-600 text-white rounded-tr-none' : 'self-start bg-white text-gray-800 border rounded-tl-none'} message-bubble">
+                            ${data.message}
+                            <span class="msg-time ${isAdmin ? 'text-blue-200' : 'text-gray-400'}">${formatTime(data.timestamp)}</span>
+                        </div>`;
+                });
+                box.scrollTop = box.scrollHeight;
+            });
+        };
+
+        // ३. ऍडमिन रिप्लाय पाठवणे
+        window.sendAdminReply = async () => {
+            const input = document.getElementById('adminReplyInput');
+            const msg = input.value.trim();
+            if(!msg || !activeUser) return;
+            input.value = "";
+            await addDoc(collection(db, "support_chats"), { 
+                userMobile: activeUser, 
+                sender: "Admin", 
+                message: msg, 
+                timestamp: Date.now() 
+            });
+        };
+        
+        document.getElementById('adminReplyInput').addEventListener('keypress', (e) => { if(e.key === 'Enter') sendAdminReply(); });
+    </script>
+</body>
+</html>

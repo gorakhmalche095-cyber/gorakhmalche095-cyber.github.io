@@ -19,7 +19,7 @@
 <body class="h-screen flex flex-col">
 
     <div class="bg-blue-600 p-5 text-white flex items-center gap-4 shadow-lg sticky top-0 z-50">
-        <button onclick="window.location.href='index.html'" class="w-10 h-10 flex items-center justify-center bg-white/20 rounded-full active:scale-90 transition-all">
+        <button onclick="window.location.href='index.html'" class="w-10 h-10 flex items-center justify-center bg-white/20 rounded-full active:scale-90">
             <i class="fas fa-arrow-left"></i>
         </button>
         <div class="flex items-center gap-3">
@@ -36,8 +36,12 @@
     <div id="userMsgBox" class="flex-1 p-5 overflow-y-auto space-y-4 flex flex-col scroll-smooth bg-[#f0f2f5]">
     </div>
 
+    <div id="typingIndicator" class="hidden px-6 py-2 text-[11px] font-black text-blue-500 italic animate-pulse">
+        Admin is typing...
+    </div>
+
     <div class="p-4 bg-white border-t flex items-center gap-3 shadow-[0_-5px_20px_rgba(0,0,0,0.05)]">
-        <button onclick="document.getElementById('photoInput').click()" class="text-gray-400 px-2 text-xl active:scale-90 transition-all">
+        <button onclick="document.getElementById('photoInput').click()" class="text-gray-400 px-2 text-xl active:scale-90">
             <i id="cameraIcon" class="fas fa-camera"></i>
         </button>
         <input type="file" id="photoInput" class="hidden" accept="image/*" onchange="uploadPhoto(this)">
@@ -45,7 +49,7 @@
         <input type="text" id="userChatInput" placeholder="Type your message here..." 
             class="flex-1 bg-gray-100 rounded-2xl px-5 py-4 text-sm font-bold outline-none border-none focus:ring-2 focus:ring-blue-500 transition-all">
         
-        <button onclick="sendUserMsg()" class="bg-blue-600 text-white w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg active:scale-90 transition-all">
+        <button onclick="sendUserMsg()" class="bg-blue-600 text-white w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg active:scale-90">
             <i class="fas fa-paper-plane text-lg"></i>
         </button>
     </div>
@@ -71,7 +75,15 @@
 
         const formatTime = (ts) => ts ? new Date(ts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true }) : "";
 
-        // Messages Load करायचे (No Storage Error)
+        const getDisplayDate = (ts) => {
+            const d = new Date(ts);
+            const today = new Date();
+            const yest = new Date(); yest.setDate(today.getDate() - 1);
+            if (d.toDateString() === today.toDateString()) return "Today";
+            if (d.toDateString() === yest.toDateString()) return "Yesterday";
+            return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+        };
+
         const loadMessages = () => {
             const q = query(collection(db, "support_chats"), where("userMobile", "==", mobile));
             onSnapshot(q, (snapshot) => {
@@ -79,10 +91,18 @@
                 box.innerHTML = `<div class="self-start bg-blue-100 text-blue-800 px-4 py-3 rounded-2xl rounded-tl-none max-w-[85%] text-[12px] font-bold shadow-sm mb-2">Hello! How can we help today?</div>`;
                 
                 const docs = snapshot.docs.map(d => d.data()).sort((a,b) => a.timestamp - b.timestamp);
+                let lastDate = "";
+
                 docs.forEach(data => {
                     const isAdmin = data.sender === "Admin";
+                    const currentDate = getDisplayDate(data.timestamp);
+                    if (currentDate !== lastDate) {
+                        box.innerHTML += `<div class="flex justify-center my-6"><span class="bg-gray-200 text-gray-500 text-[9px] font-black px-4 py-1 rounded-full uppercase tracking-widest">${currentDate}</span></div>`;
+                        lastDate = currentDate;
+                    }
+
                     box.innerHTML += `
-                        <div class="${isAdmin ? 'self-start bg-white text-gray-800 border' : 'self-end bg-blue-600 text-white shadow-blue-200'} px-4 py-3 rounded-2xl max-w-[85%] text-[12px] font-bold shadow-md animate-fade-in message-bubble mb-2">
+                        <div class="${isAdmin ? 'self-start bg-white text-gray-800 border' : 'self-end bg-blue-600 text-white'} px-4 py-3 rounded-2xl max-w-[85%] text-[12px] font-bold shadow-md animate-fade-in message-bubble mb-2">
                             ${data.message}
                             <span class="msg-time ${isAdmin ? 'text-gray-400' : 'text-blue-200'}">${formatTime(data.timestamp)}</span>
                         </div>`;
@@ -91,8 +111,7 @@
             });
         };
 
-        // तुझी स्वतःची API Key वापरून Photo Upload
-        window.uploadPhoto = (input) => {
+        window.uploadPhoto = async (input) => {
             const file = input.files[0];
             if (!file) return;
 
@@ -102,30 +121,30 @@
             const formData = new FormData();
             formData.append("image", file);
 
-            const xhr = new XMLHttpRequest();
-            // तुझी पर्सनल API Key इथे सेट केली आहे
-            xhr.open("POST", "https://api.imgbb.com/1/upload?key=f862756aa196fea426ebce881b5cf9c5");
-
-            xhr.onload = async function() {
-                const response = JSON.parse(xhr.responseText);
-                if (xhr.status === 200 && response.success) {
-                    const url = response.data.url;
+            try {
+                // Direct ImgBB API call - No Firebase Storage needed
+                const res = await fetch("https://api.imgbb.com/1/upload?key=8e68e47f2022872322a848651877051a", {
+                    method: "POST",
+                    body: formData
+                });
+                const resData = await res.json();
+                
+                if(resData.success) {
                     await addDoc(collection(db, "support_chats"), {
                         userMobile: mobile,
                         sender: mobile,
-                        message: `<img src="${url}" class="rounded-xl w-full max-w-[220px] h-auto shadow-sm" onclick="window.open('${url}')">`,
+                        message: `<img src="${resData.data.url}" class="rounded-xl w-full max-w-[220px] h-auto shadow-sm" onclick="window.open('${resData.data.url}')">`,
                         timestamp: Date.now()
                     });
-                    icon.className = "fas fa-camera";
-                    input.value = "";
                 } else {
-                    icon.className = "fas fa-camera";
-                    alert("Upload Failed: " + (response.error ? response.error.message : "Error"));
+                    throw new Error("Upload Failed");
                 }
-            };
-
-            xhr.onerror = () => { icon.className = "fas fa-camera"; alert("Network Error!"); };
-            xhr.send(formData);
+            } catch (err) {
+                alert("Photo upload failed! Please check your internet.");
+            } finally {
+                icon.className = "fas fa-camera";
+                input.value = "";
+            }
         };
 
         window.sendUserMsg = async () => {
@@ -140,6 +159,11 @@
                 timestamp: Date.now()
             });
         };
+
+        onSnapshot(doc(db, "typing_status", mobile), (snap) => {
+            const indicator = document.getElementById('typingIndicator');
+            (snap.exists() && snap.data().isTyping) ? indicator.classList.remove('hidden') : indicator.classList.add('hidden');
+        });
 
         document.getElementById('userChatInput').addEventListener('keypress', (e) => { if(e.key === 'Enter') sendUserMsg(); });
         loadMessages();

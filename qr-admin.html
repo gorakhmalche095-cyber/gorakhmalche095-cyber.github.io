@@ -44,7 +44,7 @@
                         <option value="1000">1000 PLAN</option>
                         <option value="2000">2000 PLAN</option>
                         <option value="5000">5000 PLAN</option>
-                        <option value="15000">15000 PLAN</option>
+                        <option value="1500">1500 PLAN</option>
                     </select>
                 </div>
 
@@ -99,7 +99,7 @@
                 <i class="fas fa-exclamation-triangle"></i>
             </div>
             <h3 class="text-white font-black uppercase text-sm mb-2">Final Warning</h3>
-            <p class="text-[10px] text-gray-500 font-bold mb-6">Are you sure you want to delete <span id="displayNum" class="text-red-500"></span>? This cannot be undone.</p>
+            <p class="text-[10px] text-gray-500 font-bold mb-6">Are you sure you want to delete <span id="displayNum" class="text-red-500"></span>? All plans and earnings will be wiped.</p>
             <div class="flex flex-col gap-3">
                 <button onclick="executeDelete()" class="w-full bg-red-600 text-white py-4 rounded-2xl font-black uppercase text-[10px]">Confirm Termination</button>
                 <button onclick="closeModal()" class="w-full bg-slate-800 text-slate-400 py-4 rounded-2xl font-black uppercase text-[10px]">Cancel</button>
@@ -109,7 +109,10 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, doc, getDoc, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { 
+            getFirestore, doc, getDoc, setDoc, deleteDoc, 
+            collection, query, where, getDocs, writeBatch 
+        } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyA3k5ByUuJ-1jtVovgZMxsw1LBaBkn_nDo",
@@ -157,7 +160,7 @@
             } catch (e) { alert("Error: " + e.message); }
         }
 
-        // --- DELETE LOGIC ---
+        // --- प्रगत डिलीट लॉजिक (Queries सह) ---
         window.requestDelete = async () => {
             const mobile = document.getElementById('targetMobile').value;
             if(mobile.length !== 10) return alert("Enter valid 10-digit number!");
@@ -176,10 +179,41 @@
 
         window.executeDelete = async () => {
             try {
-                await deleteDoc(doc(db, "users", mobileToDelete));
-                alert("Account " + mobileToDelete + " terminated.");
+                const batch = writeBatch(db);
+
+                // १. युजर प्रोफाइल डिलीट (Doc ID मोबाईल नंबर आहे)
+                batch.delete(doc(db, "users", mobileToDelete));
+
+                // २. Purchases मधील डेटा (Query द्वारे)
+                const qPurchases = query(collection(db, "purchases"), where("userMobile", "==", mobileToDelete));
+                const snapPurchases = await getDocs(qPurchases);
+                snapPurchases.forEach((d) => batch.delete(d.ref));
+
+                // ३. Earnings मधील डेटा
+                const qEarnings = query(collection(db, "earnings"), where("userMobile", "==", mobileToDelete));
+                const snapEarnings = await getDocs(qEarnings);
+                snapEarnings.forEach((d) => batch.delete(d.ref));
+
+                // ४. Recharges मधील डेटा
+                const qRecharges = query(collection(db, "recharges"), where("userMobile", "==", mobileToDelete));
+                const snapRecharges = await getDocs(qRecharges);
+                snapRecharges.forEach((d) => batch.delete(d.ref));
+
+                // ५. Withdrawals मधील डेटा
+                const qWithdrawals = query(collection(db, "withdrawals"), where("userMobile", "==", mobileToDelete));
+                const snapWithdrawals = await getDocs(qWithdrawals);
+                snapWithdrawals.forEach((d) => batch.delete(d.ref));
+
+                // सर्व बदल एकदाच लागू करा
+                await batch.commit();
+
+                alert("Account " + mobileToDelete + " आणि सर्व संबंधित डेटा कायमचा नष्ट केला आहे.");
                 location.reload();
-            } catch (e) { alert("Error: " + e.message); }
+
+            } catch (e) { 
+                console.error(e);
+                alert("Error during termination: " + e.message); 
+            }
         }
 
         loadCurrent();

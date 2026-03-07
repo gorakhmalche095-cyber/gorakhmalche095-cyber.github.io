@@ -121,9 +121,11 @@
     <p class="text-[8px] font-black uppercase text-slate-500 mt-1">Install App</p>
 </a>
 
-        <div id="supportBtn" class="bg-white p-3 rounded-2xl text-center shadow-sm border border-slate-100 cursor-pointer">
-            <i class="fas fa-headset text-pink-500 text-lg"></i>
-            <p class="text-[8px] font-black uppercase text-slate-500 mt-1">Support</p>
+            <div id="supportBtn" onclick="window.location.href='support.html'" class="bg-white p-3 rounded-2xl text-center shadow-sm border border-slate-100 cursor-pointer">
+    <i class="fas fa-headset text-pink-500 text-lg"></i>
+    <p class="text-[8px] font-black uppercase text-slate-500 mt-1">Support</p>
+</div>
+
         </div>
     </div>
     
@@ -373,8 +375,8 @@ window.closePopup = () => {
             const snap = await getDoc(doc(db, "settings", "global"));
             if(snap.exists()) {
                 const url = snap.data().support;
-                document.getElementById('supportBtn').onclick = () => window.open(url, "https://t.me/sunpower_help_bot");
-                document.getElementById('channelBtn').onclick = () => window.open(url, "https://t.me/DRAGONHACKSUPPORT");
+                
+                document.getElementById('channelBtn').onclick = () => window.open(url, 'https://t.me/DRAGONHACKSUPPORT');
             }
         }
                 // १. नोटीस बंद करण्यासाठी फंक्शन
