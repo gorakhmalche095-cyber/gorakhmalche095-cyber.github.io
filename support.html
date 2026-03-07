@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Support | SunPower</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .animate-fade-in { animation: fadeIn 0.3s ease-in; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        body { background-color: #f8fafc; }
+        .message-bubble { position: relative; padding-bottom: 22px !important; }
+        .msg-time { position: absolute; bottom: 6px; right: 12px; font-size: 8px; font-weight: 900; opacity: 0.7; text-transform: uppercase; }
+        #userMsgBox::-webkit-scrollbar { width: 4px; }
+        #userMsgBox::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+    </style>
+</head>
+<body class="h-screen flex flex-col">
+
+    <div class="bg-blue-600 p-5 text-white flex items-center gap-4 shadow-lg sticky top-0 z-50">
+        <button onclick="window.location.href='index.html'" class="w-10 h-10 flex items-center justify-center bg-white/20 rounded-full active:scale-90">
+            <i class="fas fa-arrow-left"></i>
+        </button>
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center text-blue-600 shadow-inner">
+                <i class="fas fa-user-shield text-xl"></i>
+            </div>
+            <div>
+                <h4 class="font-black text-sm uppercase italic tracking-widest leading-tight">SunPower Support</h4>
+                <p class="text-[10px] font-bold opacity-80 text-green-300 uppercase">● Online Now</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="userMsgBox" class="flex-1 p-5 overflow-y-auto space-y-4 flex flex-col scroll-smooth bg-[#f0f2f5]">
+    </div>
+
+    <div id="typingIndicator" class="hidden px-6 py-2 text-[11px] font-black text-blue-500 italic animate-pulse">
+        Admin is typing...
+    </div>
+
+    <div class="p-4 bg-white border-t flex items-center gap-3 shadow-[0_-5px_20px_rgba(0,0,0,0.05)]">
+        <button onclick="document.getElementById('photoInput').click()" class="text-gray-400 px-2 text-xl active:scale-90">
+            <i id="cameraIcon" class="fas fa-camera"></i>
+        </button>
+        <input type="file" id="photoInput" class="hidden" accept="image/*" onchange="uploadPhoto(this)">
+
+        <input type="text" id="userChatInput" placeholder="Type your message here..." 
+            class="flex-1 bg-gray-100 rounded-2xl px-5 py-4 text-sm font-bold outline-none border-none focus:ring-2 focus:ring-blue-500 transition-all">
+        
+        <button onclick="sendUserMsg()" class="bg-blue-600 text-white w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg active:scale-90">
+            <i class="fas fa-paper-plane text-lg"></i>
+        </button>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, doc, collection, onSnapshot, addDoc, query, where, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyA3k5ByUuJ-1jtVovgZMsw1LBaBkn_nDo",
+            authDomain: "new-investment-web.firebaseapp.com",
+            projectId: "new-investment-web",
+            storageBucket: "new-investment-web.firebasestorage.app",
+            messagingSenderId: "1078188475858",
+            appId: "1:1078188475858:web:b3777ea127aae8083740b"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const mobile = localStorage.getItem('userMobile');
+
+        if (!mobile) window.location.href = "login.html";
+
+        const formatTime = (ts) => ts ? new Date(ts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true }) : "";
+
+        const getDisplayDate = (ts) => {
+            const d = new Date(ts);
+            const today = new Date();
+            const yest = new Date(); yest.setDate(today.getDate() - 1);
+            if (d.toDateString() === today.toDateString()) return "Today";
+            if (d.toDateString() === yest.toDateString()) return "Yesterday";
+            return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+        };
+
+        const loadMessages = () => {
+            const q = query(collection(db, "support_chats"), where("userMobile", "==", mobile));
+            onSnapshot(q, (snapshot) => {
+                const box = document.getElementById('userMsgBox');
+                box.innerHTML = `<div class="self-start bg-blue-100 text-blue-800 px-4 py-3 rounded-2xl rounded-tl-none max-w-[85%] text-[12px] font-bold shadow-sm mb-2">Hello! How can we help today?</div>`;
+                
+                const docs = snapshot.docs.map(d => d.data()).sort((a,b) => a.timestamp - b.timestamp);
+                let lastDate = "";
+
+                docs.forEach(data => {
+                    const isAdmin = data.sender === "Admin";
+                    const currentDate = getDisplayDate(data.timestamp);
+                    if (currentDate !== lastDate) {
+                        box.innerHTML += `<div class="flex justify-center my-6"><span class="bg-gray-200 text-gray-500 text-[9px] font-black px-4 py-1 rounded-full uppercase tracking-widest">${currentDate}</span></div>`;
+                        lastDate = currentDate;
+                    }
+
+                    box.innerHTML += `
+                        <div class="${isAdmin ? 'self-start bg-white text-gray-800 border' : 'self-end bg-blue-600 text-white'} px-4 py-3 rounded-2xl max-w-[85%] text-[12px] font-bold shadow-md animate-fade-in message-bubble mb-2">
+                            ${data.message}
+                            <span class="msg-time ${isAdmin ? 'text-gray-400' : 'text-blue-200'}">${formatTime(data.timestamp)}</span>
+                        </div>`;
+                });
+                box.scrollTop = box.scrollHeight;
+            });
+        };
+
+        window.uploadPhoto = async (input) => {
+            const file = input.files[0];
+            if (!file) return;
+
+            const icon = document.getElementById('cameraIcon');
+            icon.className = "fas fa-spinner fa-spin text-blue-500"; 
+
+            const formData = new FormData();
+            formData.append("image", file);
+
+            try {
+                // Direct ImgBB API call - No Firebase Storage needed
+                const res = await fetch("https://api.imgbb.com/1/upload?key=8e68e47f2022872322a848651877051a", {
+                    method: "POST",
+                    body: formData
+                });
+                const resData = await res.json();
+                
+                if(resData.success) {
+                    await addDoc(collection(db, "support_chats"), {
+                        userMobile: mobile,
+                        sender: mobile,
+                        message: `<img src="${resData.data.url}" class="rounded-xl w-full max-w-[220px] h-auto shadow-sm" onclick="window.open('${resData.data.url}')">`,
+                        timestamp: Date.now()
+                    });
+                } else {
+                    throw new Error("Upload Failed");
+                }
+            } catch (err) {
+                alert("Photo upload failed! Please check your internet.");
+            } finally {
+                icon.className = "fas fa-camera";
+                input.value = "";
+            }
+        };
+
+        window.sendUserMsg = async () => {
+            const input = document.getElementById('userChatInput');
+            if(!input.value.trim()) return;
+            const msg = input.value;
+            input.value = "";
+            await addDoc(collection(db, "support_chats"), {
+                userMobile: mobile,
+                sender: mobile,
+                message: msg,
+                timestamp: Date.now()
+            });
+        };
+
+        onSnapshot(doc(db, "typing_status", mobile), (snap) => {
+            const indicator = document.getElementById('typingIndicator');
+            (snap.exists() && snap.data().isTyping) ? indicator.classList.remove('hidden') : indicator.classList.add('hidden');
+        });
+
+        document.getElementById('userChatInput').addEventListener('keypress', (e) => { if(e.key === 'Enter') sendUserMsg(); });
+        loadMessages();
+    </script>
+</body>
+</html>
