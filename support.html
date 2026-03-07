@@ -125,40 +125,47 @@
             });
         };
 
-        // Photo Upload via ImgBB
-        window.uploadPhoto = async (input) => {
+        // Photo Upload via XMLHttpRequest (More stable for ImgBB)
+        window.uploadPhoto = (input) => {
             const file = input.files[0];
             if (!file) return;
 
             const icon = document.getElementById('cameraIcon');
+            const originalClass = icon.className;
             icon.className = "fas fa-spinner fa-spin text-blue-500"; 
 
             const formData = new FormData();
             formData.append("image", file);
 
-            try {
-                const res = await fetch("https://api.imgbb.com/1/upload?key=8e68e47f2022872322a848651877051a", {
-                    method: "POST",
-                    body: formData
-                });
-                const resData = await res.json();
-                
-                if(resData.success) {
+            const xhr = new XMLHttpRequest();
+            xhr.open("POST", "https://api.imgbb.com/1/upload?key=8e68e47f2022872322a848651877051a");
+
+            xhr.onload = async function() {
+                const response = JSON.parse(xhr.responseText);
+                if (xhr.status === 200 && response.success) {
+                    const url = response.data.url;
+                    
                     await addDoc(collection(db, "support_chats"), {
                         userMobile: mobile,
                         sender: mobile,
-                        message: `<img src="${resData.data.url}" class="rounded-xl w-full max-w-[220px] h-auto shadow-sm" onclick="window.open('${resData.data.url}')">`,
+                        message: `<img src="${url}" class="rounded-xl w-full max-w-[220px] h-auto shadow-sm cursor-pointer" onclick="window.open('${url}')">`,
                         timestamp: Date.now()
                     });
+                    
+                    icon.className = originalClass;
+                    input.value = "";
                 } else {
+                    icon.className = originalClass;
                     alert("Upload failed! Please try again.");
                 }
-            } catch (err) {
-                alert("Network Error! Check your internet.");
-            } finally {
-                icon.className = "fas fa-camera";
-                input.value = "";
-            }
+            };
+
+            xhr.onerror = function() {
+                icon.className = originalClass;
+                alert("Network Error! Please check your internet connection.");
+            };
+
+            xhr.send(formData);
         };
 
         window.sendUserMsg = async () => {
