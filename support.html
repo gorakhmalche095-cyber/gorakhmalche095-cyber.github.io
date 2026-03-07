@@ -10,8 +10,21 @@
         .animate-fade-in { animation: fadeIn 0.3s ease-in; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         body { background-color: #f8fafc; }
-        .message-bubble { position: relative; padding-bottom: 22px !important; }
-        .msg-time { position: absolute; bottom: 6px; right: 12px; font-size: 8px; font-weight: 900; opacity: 0.7; text-transform: uppercase; }
+        
+        /* Instagram Style Chat Bubbles */
+        .message-bubble { 
+            position: relative; 
+            padding-bottom: 22px !important; 
+        }
+        .msg-time { 
+            position: absolute; 
+            bottom: 6px; 
+            right: 12px; 
+            font-size: 8px; 
+            font-weight: 900; 
+            opacity: 0.7; 
+            text-transform: uppercase;
+        }
         #userMsgBox::-webkit-scrollbar { width: 4px; }
         #userMsgBox::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
     </style>
@@ -19,7 +32,7 @@
 <body class="h-screen flex flex-col">
 
     <div class="bg-blue-600 p-5 text-white flex items-center gap-4 shadow-lg sticky top-0 z-50">
-        <button onclick="window.location.href='index.html'" class="w-10 h-10 flex items-center justify-center bg-white/20 rounded-full active:scale-90">
+        <button onclick="window.location.href='index.html'" class="w-10 h-10 flex items-center justify-center bg-white/20 rounded-full active:scale-90 transition-all">
             <i class="fas fa-arrow-left"></i>
         </button>
         <div class="flex items-center gap-3">
@@ -36,12 +49,12 @@
     <div id="userMsgBox" class="flex-1 p-5 overflow-y-auto space-y-4 flex flex-col scroll-smooth bg-[#f0f2f5]">
     </div>
 
-    <div id="typingIndicator" class="hidden px-6 py-2 text-[11px] font-black text-blue-500 italic animate-pulse">
+    <div id="typingIndicator" class="hidden px-6 py-2 text-[11px] font-black text-blue-500 italic animate-pulse bg-white/50">
         Admin is typing...
     </div>
 
     <div class="p-4 bg-white border-t flex items-center gap-3 shadow-[0_-5px_20px_rgba(0,0,0,0.05)]">
-        <button onclick="document.getElementById('photoInput').click()" class="text-gray-400 px-2 text-xl active:scale-90">
+        <button onclick="document.getElementById('photoInput').click()" class="text-gray-400 px-2 text-xl active:scale-90 transition-all">
             <i id="cameraIcon" class="fas fa-camera"></i>
         </button>
         <input type="file" id="photoInput" class="hidden" accept="image/*" onchange="uploadPhoto(this)">
@@ -49,7 +62,7 @@
         <input type="text" id="userChatInput" placeholder="Type your message here..." 
             class="flex-1 bg-gray-100 rounded-2xl px-5 py-4 text-sm font-bold outline-none border-none focus:ring-2 focus:ring-blue-500 transition-all">
         
-        <button onclick="sendUserMsg()" class="bg-blue-600 text-white w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg active:scale-90">
+        <button onclick="sendUserMsg()" class="bg-blue-600 text-white w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg active:scale-90 transition-all">
             <i class="fas fa-paper-plane text-lg"></i>
         </button>
     </div>
@@ -84,11 +97,12 @@
             return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
         };
 
+        // Load Messages
         const loadMessages = () => {
             const q = query(collection(db, "support_chats"), where("userMobile", "==", mobile));
             onSnapshot(q, (snapshot) => {
                 const box = document.getElementById('userMsgBox');
-                box.innerHTML = `<div class="self-start bg-blue-100 text-blue-800 px-4 py-3 rounded-2xl rounded-tl-none max-w-[85%] text-[12px] font-bold shadow-sm mb-2">Hello! How can we help today?</div>`;
+                box.innerHTML = `<div class="self-start bg-blue-100 text-blue-800 px-4 py-3 rounded-2xl rounded-tl-none max-w-[85%] text-[12px] font-bold shadow-sm mb-2">Hello! Welcome to SunPower. How can we help?</div>`;
                 
                 const docs = snapshot.docs.map(d => d.data()).sort((a,b) => a.timestamp - b.timestamp);
                 let lastDate = "";
@@ -111,6 +125,7 @@
             });
         };
 
+        // Photo Upload via ImgBB
         window.uploadPhoto = async (input) => {
             const file = input.files[0];
             if (!file) return;
@@ -122,7 +137,6 @@
             formData.append("image", file);
 
             try {
-                // Direct ImgBB API call - No Firebase Storage needed
                 const res = await fetch("https://api.imgbb.com/1/upload?key=8e68e47f2022872322a848651877051a", {
                     method: "POST",
                     body: formData
@@ -137,10 +151,10 @@
                         timestamp: Date.now()
                     });
                 } else {
-                    throw new Error("Upload Failed");
+                    alert("Upload failed! Please try again.");
                 }
             } catch (err) {
-                alert("Photo upload failed! Please check your internet.");
+                alert("Network Error! Check your internet.");
             } finally {
                 icon.className = "fas fa-camera";
                 input.value = "";
