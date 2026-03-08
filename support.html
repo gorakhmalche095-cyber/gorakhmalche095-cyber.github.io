@@ -33,8 +33,7 @@
         </div>
     </div>
 
-    <div id="userMsgBox" class="flex-1 p-5 overflow-y-auto space-y-4 flex flex-col scroll-smooth bg-[#f0f2f5]">
-    </div>
+    <div id="userMsgBox" class="flex-1 p-5 overflow-y-auto space-y-4 flex flex-col scroll-smooth bg-[#f0f2f5]"></div>
 
     <div id="typingIndicator" class="hidden px-6 py-2 text-[11px] font-black text-blue-500 italic animate-pulse">
         Admin is typing...
@@ -73,122 +72,62 @@
 
         if (!mobile) window.location.href = "login.html";
 
-        // --- १. USER STATUS LOGIC (Online/Offline) ---
-        const updateOnlineStatus = async (status) => {
-            try {
-                const statusRef = doc(db, "user_status", mobile);
-                await setDoc(statusRef, { online: status, lastSeen: Date.now() }, { merge: true });
-            } catch(e) { console.error(e); }
-        };
+        // STATUS & TYPING
+        const updateStatus = async (s) => await setDoc(doc(db, "user_status", mobile), { online: s }, { merge: true });
+        updateStatus(true);
+        window.addEventListener('beforeunload', () => updateStatus(false));
 
-        updateOnlineStatus(true); // पेज उघडल्यावर Online
-        window.addEventListener('beforeunload', () => updateOnlineStatus(false)); // पेज बंद करताना Offline
-
-        // --- २. USER TYPING LOGIC ---
         const userInput = document.getElementById('userChatInput');
-        let typingTimer;
-        userInput.addEventListener('input', async () => {
-            const typingRef = doc(db, "typing_status", mobile + "_user");
-            await setDoc(typingRef, { isTyping: true }, { merge: true });
-            
-            clearTimeout(typingTimer);
-            typingTimer = setTimeout(async () => {
-                await setDoc(typingRef, { isTyping: false }, { merge: true });
-            }, 2000); // २ सेकंद शांत बसल्यावर टायपिंग बंद होईल
+        let tTimer;
+        userInput.addEventListener('keydown', () => setDoc(doc(db, "typing_status", mobile + "_user"), { isTyping: true }, { merge: true }));
+        userInput.addEventListener('keyup', () => {
+            clearTimeout(tTimer);
+            tTimer = setTimeout(() => setDoc(doc(db, "typing_status", mobile + "_user"), { isTyping: false }, { merge: true }), 800);
         });
 
         const formatTime = (ts) => ts ? new Date(ts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true }) : "";
 
-        const getDisplayDate = (ts) => {
-            const d = new Date(ts);
-            const today = new Date();
-            const yest = new Date(); yest.setDate(today.getDate() - 1);
-            if (d.toDateString() === today.toDateString()) return "Today";
-            if (d.toDateString() === yest.toDateString()) return "Yesterday";
-            return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
-        };
-
-        const loadMessages = () => {
-            const q = query(collection(db, "support_chats"), where("userMobile", "==", mobile));
-            onSnapshot(q, (snapshot) => {
-                const box = document.getElementById('userMsgBox');
-                box.innerHTML = `<div class="self-start bg-blue-100 text-blue-800 px-4 py-3 rounded-2xl rounded-tl-none max-w-[85%] text-[12px] font-bold shadow-sm mb-2">Hello! How can we help today?</div>`;
-                
-                const docs = snapshot.docs.map(d => d.data()).sort((a,b) => a.timestamp - b.timestamp);
-                let lastDate = "";
-
-                docs.forEach(data => {
-                    const isAdmin = data.sender === "Admin";
-                    const currentDate = getDisplayDate(data.timestamp);
-                    if (currentDate !== lastDate) {
-                        box.innerHTML += `<div class="flex justify-center my-6"><span class="bg-gray-200 text-gray-500 text-[9px] font-black px-4 py-1 rounded-full uppercase tracking-widest">${currentDate}</span></div>`;
-                        lastDate = currentDate;
-                    }
-
-                    box.innerHTML += `
-                        <div class="${isAdmin ? 'self-start bg-white text-gray-800 border' : 'self-end bg-blue-600 text-white'} px-4 py-3 rounded-2xl max-w-[85%] text-[12px] font-bold shadow-md animate-fade-in message-bubble mb-2">
-                            ${data.message}
-                            <span class="msg-time ${isAdmin ? 'text-gray-400' : 'text-blue-200'}">${formatTime(data.timestamp)}</span>
-                        </div>`;
-                });
-                box.scrollTop = box.scrollHeight;
-            });
-        };
-
+        // PHOTO UPLOAD
         window.uploadPhoto = async (input) => {
             const file = input.files[0];
             if (!file) return;
-
             const icon = document.getElementById('cameraIcon');
-            icon.className = "fas fa-spinner fa-spin text-blue-500"; 
-
-            const formData = new FormData();
-            formData.append("image", file);
-
+            icon.className = "fas fa-spinner fa-spin text-blue-500";
+            const fd = new FormData(); fd.append("image", file);
             try {
-                const res = await fetch("https://api.imgbb.com/1/upload?key=8e68e47f2022872322a848651877051a", {
-                    method: "POST",
-                    body: formData
-                });
-                const resData = await res.json();
-                
-                if(resData.success) {
-                    await addDoc(collection(db, "support_chats"), {
-                        userMobile: mobile,
-                        sender: mobile,
-                        message: `<img src="${resData.data.url}" class="rounded-xl w-full max-w-[220px] h-auto shadow-sm" onclick="window.open('${resData.data.url}')">`,
-                        timestamp: Date.now()
-                    });
+                const res = await fetch("https://api.imgbb.com/1/upload?key=8e68e47f2022872322a848651877051a", { method: "POST", body: fd });
+                const rd = await res.json();
+                if(rd.success) {
+                    await addDoc(collection(db, "support_chats"), { userMobile: mobile, sender: mobile, message: `<img src="${rd.data.url}" class="rounded-xl w-full max-w-[220px]">`, timestamp: Date.now() });
                 }
-            } catch (err) {
-                alert("Photo upload failed!");
-            } finally {
-                icon.className = "fas fa-camera";
-                input.value = "";
-            }
+            } catch (e) { alert("Upload failed"); }
+            finally { icon.className = "fas fa-camera"; input.value = ""; }
         };
 
         window.sendUserMsg = async () => {
             const input = document.getElementById('userChatInput');
             if(!input.value.trim()) return;
-            const msg = input.value;
-            input.value = "";
-            await addDoc(collection(db, "support_chats"), {
-                userMobile: mobile,
-                sender: mobile,
-                message: msg,
-                timestamp: Date.now()
-            });
+            const m = input.value; input.value = "";
+            setDoc(doc(db, "typing_status", mobile + "_user"), { isTyping: false }, { merge: true });
+            await addDoc(collection(db, "support_chats"), { userMobile: mobile, sender: mobile, message: m, timestamp: Date.now() });
         };
 
-        // ऍडमिन टायपिंग इंडिकेटर
+        onSnapshot(query(collection(db, "support_chats"), where("userMobile", "==", mobile)), (snap) => {
+            const box = document.getElementById('userMsgBox'); box.innerHTML = "";
+            const docs = snap.docs.map(d => d.data()).sort((a,b) => a.timestamp - b.timestamp);
+            docs.forEach(d => {
+                const isAdmin = d.sender === "Admin";
+                box.innerHTML += `<div class="${isAdmin ? 'self-start bg-white' : 'self-end bg-blue-600 text-white'} px-4 py-3 rounded-2xl max-w-[85%] text-[12px] font-bold shadow-md mb-2 message-bubble">${d.message}<span class="msg-time ${isAdmin?'text-gray-400':'text-blue-200'}">${formatTime(d.timestamp)}</span></div>`;
+            });
+            box.scrollTop = box.scrollHeight;
+        });
+
         onSnapshot(doc(db, "typing_status", mobile), (snap) => {
-            const indicator = document.getElementById('typingIndicator');
-            (snap.exists() && snap.data().isTyping) ? indicator.classList.remove('hidden') : indicator.classList.add('hidden');
+            const ind = document.getElementById('typingIndicator');
+            (snap.exists() && snap.data().isTyping) ? ind.classList.remove('hidden') : ind.classList.add('hidden');
         });
 
         document.getElementById('userChatInput').addEventListener('keypress', (e) => { if(e.key === 'Enter') sendUserMsg(); });
-        loadMessages();
     </script>
 </body>
 </html>
