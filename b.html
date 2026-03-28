@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="mr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SunPower - Key Activation</title>
+    <style>
+        /* Matrix Background */
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #000;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            font-family: 'Courier New', Courier, monospace;
+        }
+
+        #matrix-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: -1;
+        }
+
+        /* Hacker Login Box */
+        .login-box {
+            background: rgba(0, 20, 0, 0.9);
+            border: 2px solid #00ff00;
+            box-shadow: 0 0 20px #00ff00;
+            padding: 40px;
+            border-radius: 15px;
+            text-align: center;
+            width: 90%;
+            max-width: 350px;
+        }
+
+        h2 {
+            color: #00ff00;
+            margin-bottom: 25px;
+            letter-spacing: 2px;
+            text-shadow: 0 0 10px #00ff00;
+            font-size: 20px;
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 15px;
+            background: transparent;
+            border: 1px solid #00ff00;
+            color: #00ff00;
+            font-size: 16px;
+            outline: none;
+            text-align: center;
+            margin-bottom: 20px;
+            border-radius: 5px;
+        }
+
+        /* Only One Button */
+        .activate-btn {
+            width: 100%;
+            padding: 15px;
+            background: #00ff00;
+            color: #000;
+            border: none;
+            font-weight: bold;
+            font-size: 18px;
+            cursor: pointer;
+            text-transform: uppercase;
+            box-shadow: 0 0 15px #00ff00;
+            transition: 0.3s;
+        }
+
+        .activate-btn:hover {
+            background: #000;
+            color: #00ff00;
+            border: 1px solid #00ff00;
+        }
+
+        #error-msg {
+            color: #ff0000;
+            margin-top: 15px;
+            font-size: 14px;
+            font-weight: bold;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+<canvas id="matrix-canvas"></canvas>
+
+<div class="login-box">
+    <h2>SYSTEM ACCESS</h2>
+    <input type="text" id="keyInput" class="input-field" placeholder="ENTER ACCESS KEY">
+    <button class="activate-btn" onclick="validateKey()">ACTIVATE ✅</button>
+    <div id="error-msg">INVALID KEY! ACCESS DENIED.</div>
+</div>
+
+<script>
+    // Matrix Rain Effect
+    const canvas = document.getElementById('matrix-canvas');
+    const ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    const letters = "0101010101010101";
+    const fontSize = 16;
+    const columns = canvas.width / fontSize;
+    const drops = Array(Math.floor(columns)).fill(1);
+
+    function draw() {
+        ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = "#0F0";
+        ctx.font = fontSize + "px arial";
+        for (let i = 0; i < drops.length; i++) {
+            const text = letters[Math.floor(Math.random() * letters.length)];
+            ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+            if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
+            drops[i]++;
+        }
+    }
+    setInterval(draw, 33);
+
+    // Key Validation & Redirection
+    function validateKey() {
+        const key = document.getElementById("keyInput").value;
+        const error = document.getElementById("error-msg");
+        
+        // Ithe tumhi tumchi 'Secret Key' tharvu shakta
+        const correctKey = "LOUISVUITTON2.1"; 
+
+        if (key === correctKey) {
+            // Jar key barobar asel tar payment page var redirect karel
+            // 'h.html' chya jagi tumchya dusrya page che naav taka
+            window.location.href = "h.html"; 
+        } else {
+            error.style.display = "block";
+            error.innerHTML = "❌ ACCESS DENIED: INVALID KEY";
+            
+            // 2 second nantar error hide karel
+            setTimeout(() => { error.style.display = "none"; }, 2000);
+        }
+    }
+</script>
+
+</body>
+</html>
