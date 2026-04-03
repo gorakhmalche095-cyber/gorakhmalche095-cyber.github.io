@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SunPower - Color Prediction Hack</title>
+    <style>
+        /* Matrix Background */
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #000;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            font-family: 'Consolas', 'Courier New', monospace;
+        }
+
+        #matrix-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: -1;
+        }
+
+        /* Hack Card */
+        .hack-card {
+            background: rgba(0, 10, 0, 0.9);
+            width: 90%;
+            max-width: 420px;
+            padding: 25px;
+            border-radius: 12px;
+            border: 2px solid #00ff00;
+            box-shadow: 0 0 30px rgba(0, 255, 0, 0.4);
+            text-align: center;
+            color: #00ff00;
+        }
+
+        /* English Disclaimer - Updated */
+        .disclaimer-box {
+            background: rgba(255, 0, 0, 0.15);
+            border: 1px solid #ff0000;
+            padding: 15px;
+            margin-bottom: 25px;
+            text-align: left;
+            border-radius: 5px;
+        }
+
+        .disclaimer-box h3 {
+            color: #ff4444;
+            font-size: 14px;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            text-decoration: underline;
+            text-align: center;
+        }
+
+        .disclaimer-box p {
+            color: #ffffff;
+            font-size: 12px;
+            line-height: 1.5;
+            margin: 0;
+        }
+
+        .status-text {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            letter-spacing: 2px;
+            text-shadow: 0 0 10px #00ff00;
+        }
+
+        /* Activation Button */
+        .activate-btn {
+            background: #00ff00;
+            color: #000;
+            width: 100%;
+            padding: 15px;
+            font-size: 18px;
+            font-weight: 900;
+            border: none;
+            cursor: pointer;
+            text-transform: uppercase;
+            box-shadow: 0 0 15px #00ff00;
+            transition: 0.3s;
+        }
+
+        .activate-btn:hover {
+            background: #ffffff;
+            box-shadow: 0 0 25px #ffffff;
+        }
+
+        #log-screen {
+            margin-top: 20px;
+            font-size: 13px;
+            color: #00ff00;
+            text-align: left;
+            height: 50px;
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+
+<canvas id="matrix-canvas"></canvas>
+
+<div class="hack-card">
+    <div class="disclaimer-box">
+        <h3>⚠️ SYSTEM DISCLAIMER ⚠️</h3>
+        <p>
+            This server-side script is designed to bypass standard encryption protocols. 
+            By activating this tool, you gain access to <b>100% Verified Number Predictions</b> 
+            synced directly from the game database. Ensure your connection is secure before 
+            initiating the injection process.
+        </p>
+    </div>
+
+    <div class="status-text">DATABASE BYPASS READY</div>
+
+    <button class="activate-btn" onclick="startInjection()">ACTIVATE HACK ✅</button>
+
+    <div id="log-screen"></div>
+</div>
+
+<script>
+    // Matrix Background
+    const canvas = document.getElementById('matrix-canvas');
+    const ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    const chars = "01SECURE89BYPASSXYZ$#@";
+    const fontSize = 16;
+    const columns = canvas.width / fontSize;
+    const drops = Array(Math.floor(columns)).fill(1);
+
+    function draw() {
+        ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = "#0F0";
+        ctx.font = fontSize + "px arial";
+        for (let i = 0; i < drops.length; i++) {
+            const text = chars[Math.floor(Math.random() * chars.length)];
+            ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+            if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
+            drops[i]++;
+        }
+    }
+    setInterval(draw, 35);
+
+    // Injection Logic
+    function startInjection() {
+        const log = document.getElementById("log-screen");
+        const btn = document.querySelector(".activate-btn");
+        btn.disabled = true;
+        btn.innerHTML = "INJECTING...";
+
+        const steps = [
+            "[+] Initializing exploit...",
+            "[+] Bypassing security layers...",
+            "[+] Fetching live prediction...",
+            "[+] Data packet received!",
+            "[!] CRITICAL ERROR: TOKEN EXPIRED"
+        ];
+
+        let i = 0;
+        const interval = setInterval(() => {
+            log.innerHTML += "<div>" + steps[i] + "</div>";
+            i++;
+            if (i >= steps.length) {
+                clearInterval(interval);
+                setTimeout(() => {
+                    alert("ACCESS DENIED: Your activation key has expired. Please contact support.");
+                    window.location.href = "https://T.me/SunPowerHelp";
+                }, 1000);
+            }
+        }, 1200);
+    }
+</script>
+
+</body>
+</html>
